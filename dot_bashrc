@@ -1,0 +1,96 @@
+# binds
+bind '"\C-n": history-search-forward'
+bind '"\C-p": history-search-backward'
+bind '"\e[A": history-search-backward'
+bind '"\e[B": history-search-forward'
+
+# User specific aliases and functions
+alias python=python3
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+
+# enable color support of ls and also add handy aliases
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+# functions
+extract () {
+    if [ -f $1 ] ; then
+        case $1 in
+            *.tar.bz2)   tar xvjf $1    ;;
+            *.tar.gz)    tar xvzf $1    ;;
+            *.bz2)       bunzip2 $1     ;;
+            *.tar.xz)    tar -Jxvf $1   ;;
+            *.rar)       unrar x $1     ;;
+            *.gz)        gunzip $1      ;;
+            *.tar)       tar xvf $1     ;;
+            *.tbz2)      tar xvjf $1    ;;
+            *.tgz)       tar xvzf $1    ;;
+            *.zip)       unzip $1       ;;
+            *.Z)         uncompress $1  ;;
+            *.7z)        7z x $1        ;;
+            *)           echo "don't know how to extract '$1'..." ;;
+        esac
+    else
+        echo "'$1' is not a valid file!"
+    fi
+}
+compress () {
+    if [ $# -ge 2 ]; then
+        archive=$1
+        shift
+        case $archive in
+            *.tar.gz)    tar zcvf $archive $@   ;;
+            *.tgz)       tar zcvf $archive $@   ;;
+            *.tar.bz2)   tar Icvf $archive $@   ;;
+            *.tbz)       tar Icvf $archive $@   ;;
+            *.tar.xz)    tar -Jcvf $archive $@  ;;
+            *.bz2)       bzip2 $1               ;;
+            *.gz)        gzip $1                ;;
+            *.rar)       rar a $archive $@      ;;
+            *.tar)       tar cvf $1 $@          ;;
+            *.zip)       zip $archive $@        ;;
+            *.7z)        7z a $archive $@       ;;
+            *)           echo "don't know how to compress '$archive' ..." ;;
+        esac
+    else
+        echo "args is not a valid!"
+        echo "usage: compress <archive> <file> ..."
+    fi
+}
+
+
+#############################################################
+# modifications needed only in interactive mode
+if [ "$PS1" != "" ]; then
+    # Turn on checkwinsize
+    shopt -s checkwinsize
+
+    # keep more history
+    shopt -s histappend
+    export HISTSIZE=100000
+    export HISTFILESIZE=100000
+
+    PS1_HOST="localhost"
+    PS1_COLOR="32"
+    if [ "$SSH_TTY" != "" ]; then
+        PS1_HOST=`hostname`
+        host_hash=$((0x$(shasum <<<${PS1_HOST})0))
+        PS1_COLOR=$((${host_hash#-}%7+31))
+    fi
+    #PS1='\[\033[01;31m\]\u@${PS1_HOST} \[\033[38;5;202m\][\D{%Y/%m/%d} \t]\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]$(__git_ps1 " (%s)" 2>/dev/null)\n$ '
+    PS1='\[\033[01;${PS1_COLOR}m\]\u@${PS1_HOST} \[\033[38;5;243m\][\D{%Y/%m/%d} \t]\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]$(__git_ps1 " (%s)" 2>/dev/null)\n$ '
+fi
+
+export PATH=$HOME/.local/bin:$HOME/bin:$PATH
+export EDITOR=vim
+
+eval "$(~/.local/bin/mise activate bash)"
+eval "$(gh copilot alias -- bash)"
+
