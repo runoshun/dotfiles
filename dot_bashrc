@@ -89,8 +89,11 @@ if [ "$PS1" != "" ]; then
 fi
 
 export PATH=$HOME/.local/bin:$HOME/bin:$PATH
-export EDITOR=vim
+export EDITOR=nvim
 
 eval "$(~/.local/bin/mise activate bash)"
-eval "$(gh copilot alias -- bash)"
+#eval "$(gh copilot alias -- bash)"
 
+if [ -f /opt/homebrew/etc/bash_completion ]; then
+  source /opt/homebrew/etc/bash_completion
+fi
