@@ -1,0 +1,18 @@
+[tools]
+usage = "latest"
+deno = "1.46.3"
+python = "3.11"
+node = "22"
+github-cli = "latest"
+jq = "latest"
+yq = "latest"
+awscli = "2"
+ruff = "latest"
+"npm:@biomejs/biome" = "latest"
+"npm:zx" = "latest"
+
+[tasks.cleancache]
+run = "echo hello"
+
+[settings]
+experimental = true
