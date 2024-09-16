@@ -1,9 +1,9 @@
 [shell]
-program = "/bin/bash"
+program = "/opt/homebrew/bin/bash"
 args = ["-l", "-c", "tmux a -t 0 || tmux"]
 
 [window]
-opacity = 0.8
+opacity = 1.0
 padding.x = 5
 padding.y = 5 
 
@@ -31,6 +31,9 @@ bindings = [
   { key = "C",        mods = "Command", action = "Copy" },
   { key = "T",        mods = "Command", action = "None" },
 ]
+
+[env]
+TERM = "xterm-256color"
 
 # vim: set ft=toml :
 

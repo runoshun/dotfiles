@@ -65,14 +65,6 @@ compress () {
     fi
 }
 
-chezmoi-add-all() {
-    chezmoi re-add ~/.config/nvim
-    chezmoi re-add ~/.config/alacritty/alacritty.toml
-    chezmoi re-add ~/.bashrc
-    chezmoi re-add ~/.hammerspoon
-    chezmoi re-add
-} 
-
 
 #############################################################
 # modifications needed only in interactive mode
@@ -96,9 +88,18 @@ if [ "$PS1" != "" ]; then
     PS1='\[\033[01;${PS1_COLOR}m\]\u@${PS1_HOST} \[\033[38;5;243m\][\D{%Y/%m/%d} \t]\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]$(__git_ps1 " (%s)" 2>/dev/null)\n$ '
 fi
 
-eval "$(~/.local/bin/mise activate bash)"
-#eval "$(gh copilot alias -- bash)"
+if [ -f ~/.local/bin/mise ]; then
+    eval "$(~/.local/bin/mise activate bash)"
+fi
 
 if [ -f /opt/homebrew/etc/bash_completion ]; then
-  source /opt/homebrew/etc/bash_completion
+    source /opt/homebrew/etc/bash_completion
 fi
+
+if command -v chezmoi &> /dev/null; then
+    alias ch="chezmoi"
+    alias cha="chezmoi apply"
+    alias chc="chezmoi cd"
+    alias chg="chezmoi git"
+fi
+# vim: set ft=bash :

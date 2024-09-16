@@ -1,9 +1,16 @@
 #!/bin/bash
 {{ if eq .chezmoi.os "darwin" }}
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
 brew install --cask hammerspoon
 brew install --cask alacritty
 brew install --cask font-hack-nerd-font
-{{ end }}
+brew install bash
 
+# true color
+brew install ncurses
+/usr/local/opt/ncurses/bin/infocmp tmux-256color > ~/tmux-256color.info
+tic -xe tmux-256color ~/tmux-256color.info
+{{ end }}
 
 # vim: set ft=bash :
