@@ -1,4 +1,6 @@
 #!/bin/bash
+
+# macos
 {{ if eq .chezmoi.os "darwin" }}
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
@@ -12,5 +14,14 @@ brew install ncurses
 /usr/local/opt/ncurses/bin/infocmp tmux-256color > ~/tmux-256color.info
 tic -xe tmux-256color ~/tmux-256color.info
 {{ end }}
+
+# arch linux
+{{ if and (eq .chezmoi.os "linux") (eq .chezmoi.osRelease.name "Arch Linux") }}
+sudo echo "uname -m" > /usr/local/bin/arch
+sudo chmod +x /usr/local/bin/arch
+{{ end }}
+
+curl https://mise.run | sh
+mise install -y
 
 # vim: set ft=bash :
