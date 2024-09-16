@@ -65,6 +65,14 @@ compress () {
     fi
 }
 
+chezmoi-add-all() {
+    chezmoi re-add ~/.config/nvim
+    chezmoi re-add ~/.config/alacritty/alacritty.toml
+    chezmoi re-add ~/.bashrc
+    chezmoi re-add ~/.hammerspoon
+    chezmoi re-add
+} 
+
 
 #############################################################
 # modifications needed only in interactive mode

@@ -10,6 +10,9 @@ awscli = "2"
 ruff = "latest"
 "npm:@biomejs/biome" = "latest"
 "npm:zx" = "latest"
+lazygit = "latest"
+neovim = "0.10"
+ripgrep = "latest"
 
 [tasks.cleancache]
 run = "echo hello"

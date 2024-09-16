@@ -1,0 +1,9 @@
+#!/bin/bash
+{{ if eq .chezmoi.os "darwin" }}
+brew install --cask hammerspoon
+brew install --cask alacritty
+brew install --cask font-hack-nerd-font
+{{ end }}
+
+
+# vim: set ft=bash :
