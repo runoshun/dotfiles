@@ -1,43 +1,20 @@
+local switcher = hs.window.switcher.new()
+switcher.ui.showSelectedThumbnail = false
+switcher.ui.textSize = 14
+switcher.ui.backgroundColor = { 0, 0, 0, 0.8 }
+switcher.ui.highlightColor = { 0.3, 0.3, 0.3, 0.8 }
+hs.hotkey.bind('alt', 'tab', function() switcher:next() end, nil, function() switcher:next() end)
+hs.hotkey.bind('alt-shift', 'tab', function() switcher:previous() end, nil, function() switcher:previous() end)
+
+-- alacritty
 local double_press = require("ctrlDoublePress")
-
-local launchAlacritty = function()
-  local appName = "Alacritty"
-  local app = hs.application.find(appName, true)
-
-  if app == nil then
-    hs.application.launchOrFocus(appName)
-  elseif app:isFrontmost() then
-    app:hide()
-  else
-    local active_space = hs.spaces.focusedSpace()
-    local alacritty_win = app:focusedWindow()
-    hs.spaces.moveWindowToSpace(alacritty_win, active_space)
-    app:setFrontmost()
-  end
-end
+local alacritty = require("alacrittyUtils")
 
 double_press.timeFrame = 0.5
-double_press.action = launchAlacritty
+double_press.action = alacritty.launch_alacritty
+hs.hotkey.bind({ "cmd" }, "U", alacritty.toggle_opacity)
 
-
-hs.hotkey.bind({ "cmd" }, "U", function()
-  alacritty_file_name = string.format("%s/.config/alacritty/alacritty.toml", os.getenv("HOME"))
-
-  opaque = "opacity = 1.0"
-  transparent = "opacity = 0.8"
-
-  local file = io.open(alacritty_file_name)
-
-  local content = file:read "*a"
-  file:close()
-
-  if string.match(content, opaque) then
-    content = string.gsub(content, opaque, transparent)
-  else
-    content = string.gsub(content, transparent, opaque)
-  end
-
-  local fileedited = io.open(alacritty_file_name, "w")
-  fileedited:write(content)
-  fileedited:close()
-end)
+-- launcher
+local launcher = require("launcher")
+-- Command + Spaceでランチャーを表示 (デフォルトのSpotlightショートカットを上書きします)
+hs.hotkey.bind({ "cmd" }, "space", showLauncher)
