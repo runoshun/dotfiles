@@ -80,7 +80,7 @@ if [ "$PS1" != "" ]; then
     PS1_HOST="localhost"
     PS1_COLOR="32"
     if [ "$SSH_TTY" != "" ]; then
-        PS1_HOST=`hostname`
+        PS1_HOST=`hostname 2>/dev/null || hostnamectl hostname 2>/dev/null || echo "unknown"`
         host_hash=$((0x$(shasum <<<${PS1_HOST})0))
         PS1_COLOR=$((${host_hash#-}%7+31))
     fi
