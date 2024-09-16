@@ -1,6 +1,6 @@
 [shell]
 program = "/opt/homebrew/bin/bash"
-args = ["-l", "-c", "tmux a -t 0 || tmux"]
+args = ["-l", "-c", "tmux a -t 0 2>/dev/null || tmux"]
 
 [window]
 opacity = 1.0

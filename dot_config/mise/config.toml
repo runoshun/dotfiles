@@ -13,6 +13,7 @@ ruff = "latest"
 lazygit = "latest"
 neovim = "0.10"
 ripgrep = "latest"
+starship = "latest"
 
 [tasks.cleancache]
 run = "echo hello"

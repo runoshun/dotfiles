@@ -57,6 +57,7 @@ return {
     config = function()
       vim.g.copilot_filetypes = {
         yaml = true,
+        bash = true,
       }
     end
   }
