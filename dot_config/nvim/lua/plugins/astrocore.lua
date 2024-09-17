@@ -45,6 +45,7 @@ return {
       n = {
         -- second key is the lefthand side of the map
         ["<C-e>"] = { function() vim.cmd 'Neotree toggle' end },
+        [";"] = { ":" },
 
         -- navigate buffer tabs
         ["<tab>"] = { function() require("astrocore.buffer").nav(vim.v.count1) end, desc = "Next buffer" },
