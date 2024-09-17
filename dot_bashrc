@@ -98,6 +98,9 @@ eval "$(mise exec starship -- starship init bash)"
 if [ -f /opt/homebrew/etc/bash_completion ]; then
     source /opt/homebrew/etc/bash_completion
 fi
+if [ -f /etc/bash_completion ]; then
+    source /etc/bash_completion
+fi
 
 if command -v chezmoi &> /dev/null; then
     alias ch="chezmoi"
