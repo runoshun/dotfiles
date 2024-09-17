@@ -58,6 +58,9 @@ return {
       vim.g.copilot_filetypes = {
         yaml = true,
         bash = true,
+        python = true,
+        markdown = true,
+        typescript = true
       }
     end
   }

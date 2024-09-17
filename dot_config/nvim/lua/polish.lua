@@ -2,7 +2,8 @@
 -- things like custom filetypes. This just pure lua so anything that doesn't
 -- fit in the normal config locations above can go here
 
-function print_keys()
+
+vim.keymap.set('n', '<Leader>k', function ()
   local key = vim.fn.getcharstr()
   local byte = string.byte(key)
   local key_name = vim.fn.keytrans(key)
@@ -20,6 +21,19 @@ function print_keys()
   if mods ~= "" then
     print("Modifiers: " .. mods:sub(1, -2)) -- 最後の "+" を削除
   end
-end
+end,
+  { noremap = true, silent = true })
 
-vim.api.nvim_set_keymap('n', '<Leader>k', ':lua print_keys()<CR>', { noremap = true, silent = true })
+if os.getenv("SSH_CONNECTION") ~= nil then
+  vim.g.clipboard = {
+    name = 'OSC 52',
+    copy = {
+      ['+'] = require('vim.ui.clipboard.osc52').copy('+'),
+      ['*'] = require('vim.ui.clipboard.osc52').copy('*'),
+    },
+    paste = {
+      ['+'] = require('vim.ui.clipboard.osc52').paste('+'),
+      ['*'] = require('vim.ui.clipboard.osc52').paste('*'),
+    },
+  }
+end

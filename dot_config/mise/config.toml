@@ -11,9 +11,8 @@ ruff = "latest"
 "npm:@biomejs/biome" = "latest"
 "npm:zx" = "latest"
 lazygit = "latest"
-neovim = "0.10"
-ripgrep = "latest"
 starship = "latest"
+lazydocker = "latest"
 
 [tasks.cleancache]
 run = "echo hello"
