@@ -16,5 +16,5 @@ return {
   --{ import = "astrocommunity.colorscheme.miasma-nvim" },
   { import = "astrocommunity.colorscheme.monokai-pro-nvim" },
 
-  -- { import = "astrocommunity.completion/copilot-cmp" },
+  { import = "astrocommunity.pack.python-ruff" },
 }

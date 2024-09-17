@@ -1,21 +1,22 @@
 [tools]
 usage = "latest"
-deno = "1.46.3"
-python = "3.11"
-node = "22"
 github-cli = "latest"
 jq = "latest"
 yq = "latest"
+deno = "1.46.3"
+python = "3.11"
+node = "22"
 awscli = "2"
-ruff = "latest"
-"npm:@biomejs/biome" = "latest"
 "npm:zx" = "latest"
 lazygit = "latest"
 starship = "latest"
 lazydocker = "latest"
-
-[tasks.cleancache]
-run = "echo hello"
+fd = "latest"
+{{ if or (eq .chezmoi.os "darwin") (ne .chezmoi.arch "arm64") }}
+neovim = "0.10.1"
+{{ end }}
 
 [settings]
 experimental = true
+
+# vim: set ft=toml :
