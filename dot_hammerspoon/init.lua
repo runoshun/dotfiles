@@ -14,7 +14,7 @@ double_press.timeFrame = 0.5
 double_press.action = alacritty.launch_alacritty
 hs.hotkey.bind({ "cmd" }, "U", alacritty.toggle_opacity)
 
--- launcher
-local launcher = require("launcher")
--- Command + Spaceでランチャーを表示 (デフォルトのSpotlightショートカットを上書きします)
-hs.hotkey.bind({ "cmd" }, "space", showLauncher)
+-- -- launcher
+-- local launcher = require("launcher")
+-- -- Command + Spaceでランチャーを表示 (デフォルトのSpotlightショートカットを上書きします)
+-- hs.hotkey.bind({ "cmd" }, "space", showLauncher)

@@ -51,12 +51,23 @@ return {
         ["<S-tab>"] = { function() require("astrocore.buffer").nav(-vim.v.count1) end, desc = "Previous buffer" },
 
         ["<leader><space>"] = { function() require('telescope.builtin').find_files() end, desc = "find files" },
-        -- ["<C-S-`>"] = { "<Cmd> ToggleTerm direction=horizontal size=60 <CR>", desc = "find files" },
-        ["<C-n>"] = { "<Cmd> ToggleTerm direction=horizontal size=25 <CR>", desc = "Toggle term horizontal" },
+
+        -- toggle term
+        ["<F12>"] = { "<Cmd> ToggleTerm direction=horizontal size=25 <CR>", desc = "Toggle term horizontal" },
+        ["2<F12>"] = { "<Cmd> 2ToggleTerm direction=horizontal size=25 <CR>", desc = "Toggle term horizontal" },
+
         ["<leader>tt"] = { "<Cmd> ToggleTerm direction=float <CR>", desc = "Toggle Term float" },
+        ["<leader>t-"] = { "<Cmd> ToggleTerm direction=horizontal size=25 <CR>", desc = "Toggle Term float" },
+        ["<leader>t|"] = { "<Cmd> ToggleTerm direction=vertical size=60 <CR>", desc = "Toggle Term float" },
+
+        ["<leader>2tt"] = { "<Cmd> 2ToggleTerm direction=float <CR>", desc = "Toggle Term float" },
+        ["<leader>2t-"] = { "<Cmd> 2ToggleTerm direction=horizontal size=25 <CR>", desc = "Toggle Term float" },
+        ["<leader>2t|"] = { "<Cmd> 2ToggleTerm direction=vertical size=60 <CR>", desc = "Toggle Term float" },
       },
       t = {
-        ["<C-n>"] = { "<Cmd> ToggleTerm <CR>", desc = "close term" },
+        ["<C-[>"] = { "<C-\\><C-n>", desc = "to normal mode" },
+        ["<F12>"] = { "<Cmd> ToggleTerm <CR>", desc = "close term" },
+        ["2<F12>"] = { "<Cmd> 2ToggleTerm <CR>", desc = "close term" },
       }
     },
   },
