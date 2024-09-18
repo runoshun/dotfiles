@@ -4,7 +4,7 @@ module.toggle_opacity = function()
   alacritty_file_name = string.format("%s/.config/alacritty/alacritty.toml", os.getenv("HOME"))
 
   opaque = "opacity = 1.0"
-  transparent = "opacity = 0.8"
+  transparent = "opacity = 0.75"
 
   local file = io.open(alacritty_file_name)
 

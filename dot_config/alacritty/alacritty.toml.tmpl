@@ -10,7 +10,7 @@ padding.y = 5
 decorations = "Buttonless"
 decorations_theme_variant = "Dark" # "Dark"
 
-{{ if eq .chezmoi.os "darwin" }}
+{{ if and (eq .chezmoi.os "darwin") (ne .chezmoi.group "staff") }}
 startup_mode = "SimpleFullscreen"
 {{ else }}
 startup_mode = "Maximized"
