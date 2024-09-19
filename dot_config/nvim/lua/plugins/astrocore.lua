@@ -66,7 +66,7 @@ return {
         ["<leader>2t|"] = { "<Cmd> 2ToggleTerm direction=vertical size=60 <CR>", desc = "Toggle Term float" },
       },
       t = {
-        ["<C-[>"] = { "<C-\\><C-n>", desc = "to normal mode" },
+        ["<C-]>"] = { "<C-\\><C-n>", desc = "to normal mode" },
         ["<F12>"] = { "<Cmd> ToggleTerm <CR>", desc = "close term" },
         ["2<F12>"] = { "<Cmd> 2ToggleTerm <CR>", desc = "close term" },
       }
