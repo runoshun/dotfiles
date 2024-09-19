@@ -32,6 +32,13 @@ return {
         "  ╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝ ",
         "                                                     ",
       }
+      opts.section.buttons.val = {
+        opts.button("e", "  > New file", ":ene <BAR> startinsert <CR>"),
+        opts.button("f", "  > Find file", ":Telescope find_files<CR>"),
+        opts.button("r", "  > Recent", ":Telescope oldfiles<CR>"),
+        opts.button("s", "  > Sessions", ":lua require(\"resession\").load(nil, { dir = \"dirsession\" })<CR>"),
+        opts.button("c", "  > Configs", ":e $MYVIMRC | :cd %:p:h | split . | wincmd k | pwd<CR>"),
+      }
       return opts
     end,
   },

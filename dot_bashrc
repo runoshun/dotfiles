@@ -114,6 +114,8 @@ if command -v chezmoi &> /dev/null; then
 fi
 
 alias awsume=". awsume"
+alias mr='mise r'
+alias mx='mise x'
 
 if command aws_completer &> /dev/null; then
     complete -C "`which aws_completer`" aws
@@ -132,7 +134,7 @@ auto-marine-dev-instance() {
   awsume study -a -o bedrock
   awsume marine-conv-dev -a -o marine-conv-dev-auto
   autossh -M 0 -N -f -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" marine-dev-instance-launch
-  ssh marine-dev-instance-launch
+  #ssh marine-dev-instance-launch
 }
 
 
