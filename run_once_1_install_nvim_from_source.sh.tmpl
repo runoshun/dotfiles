@@ -1,0 +1,25 @@
+#!/bin/bash
+
+if command nvim -v &> /dev/null; then
+  exit 0
+fi
+echo "installing neovim from source"
+
+if apt-get &> /dev/null; then
+  sudo apt-get update
+  sudo apt-get install -y ninja-build gettext cmake unzip curl build-essential
+elif pacman &> /dev/null; then
+  sudo pacman -Sy --noconfirm base-devel cmake unzip ninja curl
+elif dnf &> /dev/null; then
+  sudo dnf -y install ninja-build cmake gcc make unzip gettext curl glibc-gconv-extra
+fi
+
+mkdir -p ~/nvim-build
+cd ~/nvim-build
+curl -L https://github.com/neovim/neovim/archive/refs/tags/v0.10.1.zip -o nvim.zip
+unzip nvim.zip
+cd neovim-0.10.1
+make CMAKE_BUILD_TYPE=RelWithDebInfo
+sudo make install
+
+# vim: set ft=bash :

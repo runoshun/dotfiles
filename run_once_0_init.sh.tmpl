@@ -24,6 +24,8 @@ sudo chmod +x /usr/local/bin/arch
 {{ end }}
 
 curl https://mise.run | sh
+mise plugins install https://github.com/comdotlinux/asdf-lazydocker.git
+
 mise install -y
 
 # vim: set ft=bash :
