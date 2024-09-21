@@ -108,8 +108,16 @@ if command -v chezmoi &> /dev/null; then
     alias cha="chezmoi apply"
     alias chc="chezmoi cd"
     alias chg="chezmoi git"
-    chgc() {
+    chp() {
+        chezmoi git diff
+        read -p "ok? (y/N): " yn
+        case "$yn" in
+          [yY]*) ;;
+          *) return;;
+        esac
+        chezmoi git add .
         chezmoi git commit -- -m "$(chezmoi generate git-commit-message)"
+        chezmoi git push origin main
     }
 fi
 
