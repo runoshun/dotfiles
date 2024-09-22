@@ -1,5 +1,10 @@
 [shell]
+{{ if eq .chezmoi.os "darwin" }}
 program = "/opt/homebrew/bin/bash"
+{{ else }}
+program = "/bin/bash"
+{{ end }}
+
 args = ["-l", "-c", "tmux a -t 0 2>/dev/null || tmux"]
 
 [window]
@@ -9,6 +14,10 @@ padding.y = 5
 
 decorations = "Buttonless"
 decorations_theme_variant = "Dark" # "Dark"
+
+{{ if eq .chezmoi.os "darwin" }}
+option_as_alt = "OnlyLeft"
+{{ end }}
 
 {{ if and (eq .chezmoi.os "darwin") (eq .chezmoi.hostname "macbook-air") }}
 startup_mode = "SimpleFullscreen"

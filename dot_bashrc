@@ -73,14 +73,18 @@ fi
 
 if [ -f ~/.local/bin/mise ]; then
     eval "$(~/.local/bin/mise activate bash)"
+    eval "$(mise exec starship -- starship init bash)"
 fi
-eval "$(mise exec starship -- starship init bash)"
 
 if [ -f /opt/homebrew/etc/bash_completion ]; then
     source /opt/homebrew/etc/bash_completion
 fi
 if [ -f /etc/bash_completion ]; then
     source /etc/bash_completion
+fi
+
+if [ -f ~/.fzf.bash ]; then 
+    source ~/.fzf.bash
 fi
 
 if command -v chezmoi &> /dev/null; then
