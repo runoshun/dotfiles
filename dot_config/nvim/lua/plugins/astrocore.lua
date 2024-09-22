@@ -36,7 +36,6 @@ return {
         -- NOTE: `mapleader` and `maplocalleader` must be set in the AstroNvim opts or before `lazy.setup`
         -- This can be found in the `lua/lazy_setup.lua` file
         termguicolors = true,
-        python3_host_prog = vim.fn.exepath('python3'),
       },
     },
     -- Mappings can be configured through AstroCore as well.
@@ -56,20 +55,10 @@ return {
 
         -- toggle term
         ["<F12>"] = { "<Cmd> ToggleTerm direction=horizontal size=25 <CR>", desc = "Toggle term horizontal" },
-        ["2<F12>"] = { "<Cmd> 2ToggleTerm direction=horizontal size=25 <CR>", desc = "Toggle term horizontal" },
-
-        ["<leader>tt"] = { "<Cmd> ToggleTerm direction=float <CR>", desc = "Toggle Term float" },
-        ["<leader>t-"] = { "<Cmd> ToggleTerm direction=horizontal size=25 <CR>", desc = "Toggle Term float" },
-        ["<leader>t|"] = { "<Cmd> ToggleTerm direction=vertical size=60 <CR>", desc = "Toggle Term float" },
-
-        ["<leader>2tt"] = { "<Cmd> 2ToggleTerm direction=float <CR>", desc = "Toggle Term float" },
-        ["<leader>2t-"] = { "<Cmd> 2ToggleTerm direction=horizontal size=25 <CR>", desc = "Toggle Term float" },
-        ["<leader>2t|"] = { "<Cmd> 2ToggleTerm direction=vertical size=60 <CR>", desc = "Toggle Term float" },
       },
       t = {
         ["<C-]>"] = { "<C-\\><C-n>", desc = "to normal mode" },
         ["<F12>"] = { "<Cmd> ToggleTerm <CR>", desc = "close term" },
-        ["2<F12>"] = { "<Cmd> 2ToggleTerm <CR>", desc = "close term" },
       }
     },
   },

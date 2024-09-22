@@ -2,7 +2,6 @@
 -- things like custom filetypes. This just pure lua so anything that doesn't
 -- fit in the normal config locations above can go here
 
-local Terminal = require('toggleterm.terminal').Terminal
 
 vim.keymap.set('n', '<Leader>k', function()
     local key = vim.fn.getcharstr()
@@ -26,15 +25,6 @@ vim.keymap.set('n', '<Leader>k', function()
   { noremap = true, silent = true })
 
 
-local lazydocker = Terminal:new({ cmd = "lazydocker", hidden = true, direction = "float" })
-function _lazydocker_toggle()
-  lazydocker:toggle()
-end
-
-vim.api.nvim_set_keymap("n", "<leader>dd", "<cmd>lua _lazydocker_toggle()<CR>",
-  { noremap = true, silent = true, desc = "Lazydocker" })
-
-
 if os.getenv("SSH_CONNECTION") ~= nil then
   vim.g.clipboard = {
     name = 'OSC 52',
@@ -48,3 +38,16 @@ if os.getenv("SSH_CONNECTION") ~= nil then
     },
   }
 end
+
+-- aider
+local Terminal = require('toggleterm.terminal').Terminal
+local aider = Terminal:new({ cmd = "aider", hidden = true, direction = "vertical" })
+function _aider_toggle()
+  aider:toggle(80)
+end
+
+-- vim.api.nvim_create_autocmd("TermClose", {
+--   callback = function()
+--     vim.cmd("close")
+--   end
+-- })

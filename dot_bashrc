@@ -67,28 +67,9 @@ compress () {
     fi
 }
 
-
-#############################################################
-# modifications needed only in interactive mode
-#if [ "$PS1" != "" ]; then
-#    # Turn on checkwinsize
-#    shopt -s checkwinsize
-#
-#    # keep more history
-#    shopt -s histappend
-#    export HISTSIZE=100000
-#    export HISTFILESIZE=100000
-#
-#    PS1_HOST="localhost"
-#    PS1_COLOR="32"
-#    if [ "$SSH_TTY" != "" ]; then
-#        PS1_HOST=`hostname 2>/dev/null || hostnamectl hostname 2>/dev/null || echo "unknown"`
-#        host_hash=$((0x$(shasum <<<${PS1_HOST} 2>/dev/null)0))
-#        PS1_COLOR=$((${host_hash#-}%7+31))
-#    fi
-#    #PS1='\[\033[01;31m\]\u@${PS1_HOST} \[\033[38;5;202m\][\D{%Y/%m/%d} \t]\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]$(__git_ps1 " (%s)" 2>/dev/null)\n$ '
-#    PS1='\[\033[01;${PS1_COLOR}m\]\u@${PS1_HOST} \[\033[38;5;243m\][\D{%Y/%m/%d} \t]\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]$(__git_ps1 " (%s)" 2>/dev/null)\n$ '
-#fi
+if [ -f ~/.env ]; then
+    set -a && source ~/.env && set +a
+fi
 
 if [ -f ~/.local/bin/mise ]; then
     eval "$(~/.local/bin/mise activate bash)"
@@ -125,7 +106,7 @@ alias awsume=". awsume"
 alias mr='mise r'
 alias mx='mise x'
 
-if command aws_completer &> /dev/null; then
+if command -v aws_completer &> /dev/null; then
     complete -C "`which aws_completer`" aws
     complete -C "`which aws_completer`" awslocal
 fi
