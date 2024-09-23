@@ -84,6 +84,7 @@ if [ -f /etc/bash_completion ]; then
 fi
 
 if [ -f ~/.fzf.bash ]; then 
+    export FZF_DEFAULT_OPTS='--tmux 80% --layout reverse --border'
     source ~/.fzf.bash
 fi
 
