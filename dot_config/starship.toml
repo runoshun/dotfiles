@@ -1,0 +1,12 @@
+add_newline = true
+
+[directory]
+truncation_length = 100
+truncate_to_repo = false
+
+[aws.region_aliases]
+ap-northeast-1 = "jp"
+
+[package]
+disabled = true
+
