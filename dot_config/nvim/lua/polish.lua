@@ -3,6 +3,15 @@
 -- fit in the normal config locations above can go here
 
 -- クリップボードの設定
+local function paste()
+	return {
+		vim.fn.split(vim.fn.getreg(""), "\n"),
+		vim.fn.getregtype(""),
+	}
+end
+
+vim.o.clipboard = "unnamedplus"
+
 if os.getenv("SSH_CONNECTION") ~= nil then
 	vim.g.clipboard = {
 		name = "OSC 52",
@@ -11,8 +20,8 @@ if os.getenv("SSH_CONNECTION") ~= nil then
 			["*"] = require("vim.ui.clipboard.osc52").copy("*"),
 		},
 		paste = {
-			["+"] = require("vim.ui.clipboard.osc52").paste("+"),
-			["*"] = require("vim.ui.clipboard.osc52").paste("*"),
+			["+"] = paste,
+			["*"] = paste,
 		},
 	}
 end
@@ -27,7 +36,7 @@ vim.keymap.set(
 
 -- キーマップ
 local MyTerminal = require("my_toggle_terminal")
-_G._my_rightbelow_terminal = MyTerminal:new(20, "belowright")
+_G._my_rightbelow_terminal = MyTerminal:new(20, "belowright", "/bin/bash")
 _G._my_aider_terminal = MyTerminal:new(60, "vertical belowright", "aider", true)
 
 vim.keymap.set(

@@ -10,3 +10,8 @@ ap-northeast-1 = "jp"
 [package]
 disabled = true
 
+[nodejs]
+disabled = true
+
+[python]
+disabled = true

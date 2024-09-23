@@ -14,11 +14,28 @@ fd = "latest"
 fzf = "latest"
 "pipx:awsume" = "latest"
 "pipx:aider-chat" = "latest"
+"pipx:posting" = "latest"
 {{ if or (eq .chezmoi.os "darwin") (ne .chezmoi.arch "arm64") }}
 neovim = "0.10.1"
 {{ end }}
 
 [settings]
 experimental = true
+
+[tasks."devc-attach"]
+description = "attach devcontaienr"
+run = """
+#!/bin/bash
+res=$(npx @devcontainers/cli up --workspace-folder ./ --dotfiles-repository https://github.com/runoshun/dotfiles)
+devcon_json=$(cat .devcontainer/devcontainer.json)
+
+if [ "$(echo $res | jq -r .outcome)" == "success" ]; then
+  wf=$(echo $devcon_json | jq -r '. | .workspaceFolder // "/workspace"')
+  ci=$(echo $res | jq -r .containerId)
+  docker exec -it -w $wf $ci bash
+else
+  echo $res
+fi
+"""
 
 # vim: set ft=toml :
