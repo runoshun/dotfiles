@@ -4,38 +4,53 @@
 
 -- クリップボードの設定
 if os.getenv("SSH_CONNECTION") ~= nil then
-  vim.g.clipboard = {
-    name = 'OSC 52',
-    copy = {
-      ['+'] = require('vim.ui.clipboard.osc52').copy('+'),
-      ['*'] = require('vim.ui.clipboard.osc52').copy('*'),
-    },
-    paste = {
-      ['+'] = require('vim.ui.clipboard.osc52').paste('+'),
-      ['*'] = require('vim.ui.clipboard.osc52').paste('*'),
-    },
-  }
+	vim.g.clipboard = {
+		name = "OSC 52",
+		copy = {
+			["+"] = require("vim.ui.clipboard.osc52").copy("+"),
+			["*"] = require("vim.ui.clipboard.osc52").copy("*"),
+		},
+		paste = {
+			["+"] = require("vim.ui.clipboard.osc52").paste("+"),
+			["*"] = require("vim.ui.clipboard.osc52").paste("*"),
+		},
+	}
 end
 
 -- キーマップリーダー
-vim.keymap.set('n', '<Leader>k', require('my_keymap_debugger'),
-  { noremap = true, silent = true, desc = 'Keymap Debugger' })
+vim.keymap.set(
+	"n",
+	"<Leader>k",
+	require("my_keymap_debugger"),
+	{ noremap = true, silent = true, desc = "Keymap Debugger" }
+)
 
 -- キーマップ
 local MyTerminal = require("my_toggle_terminal")
-_G._my_rightbelow_terminal = MyTerminal:new(20, 'belowright')
-_G._my_aider_terminal = MyTerminal:new(60, 'vertical belowright', 'aider', true)
+_G._my_rightbelow_terminal = MyTerminal:new(20, "belowright")
+_G._my_aider_terminal = MyTerminal:new(60, "vertical belowright", "aider", true)
 
-vim.keymap.set({ 'n', 't' }, '<F12>', '<cmd>lua _G._my_rightbelow_terminal:toggle()<CR>',
-  { noremap = true, silent = true, desc = 'Toggle Right Below Terminal' })
-vim.keymap.set('n', '<leader>ai', '<cmd>lua _G._my_aider_terminal:toggle()<CR>',
-  { noremap = true, silent = true, desc = 'Toggle Aider Terminal' })
-vim.keymap.set('n', '<leader>aa', '<cmd>CopilotChatToggle<CR>',
-  { noremap = true, silent = true, desc = 'Toggle Copilot Chat' })
-vim.keymap.set('n', '<leader>aq', function()
-    local input = vim.fn.input("Quick Chat: ")
-    if input ~= "" then
-      require("CopilotChat").ask(input, { selection = require("CopilotChat.select").buffer })
-    end
-  end,
-  { noremap = true, silent = true, desc = 'Quick Chat' })
+vim.keymap.set(
+	{ "n", "t" },
+	"<F12>",
+	"<cmd>lua _G._my_rightbelow_terminal:toggle()<CR>",
+	{ noremap = true, silent = true, desc = "Toggle Right Below Terminal" }
+)
+vim.keymap.set(
+	"n",
+	"<leader>ai",
+	"<cmd>lua _G._my_aider_terminal:toggle()<CR>",
+	{ noremap = true, silent = true, desc = "Toggle Aider Terminal" }
+)
+vim.keymap.set(
+	"n",
+	"<leader>aa",
+	"<cmd>CopilotChatToggle<CR>",
+	{ noremap = true, silent = true, desc = "Toggle Copilot Chat" }
+)
+vim.keymap.set("n", "<leader>aq", function()
+	local input = vim.fn.input("Quick Chat: ")
+	if input ~= "" then
+		require("CopilotChat").ask(input, { selection = require("CopilotChat.select").buffer })
+	end
+end, { noremap = true, silent = true, desc = "Quick Chat" })
