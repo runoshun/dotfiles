@@ -2,29 +2,7 @@
 -- things like custom filetypes. This just pure lua so anything that doesn't
 -- fit in the normal config locations above can go here
 
-
-vim.keymap.set('n', '<Leader>k', function()
-    local key = vim.fn.getcharstr()
-    local byte = string.byte(key)
-    local key_name = vim.fn.keytrans(key)
-
-    print("Raw input: " .. vim.inspect(key))
-    print("Byte value: " .. byte)
-    print("Key name: " .. key_name)
-
-    -- 修飾キーの検出
-    local mods = ""
-    if vim.fn.match(key, "\\C^\\(<C-\\)") > -1 then mods = mods .. "Ctrl+" end
-    if vim.fn.match(key, "\\C^\\(<M-\\|<A-\\)") > -1 then mods = mods .. "Alt+" end
-    if vim.fn.match(key, "\\C^\\(<S-\\)") > -1 then mods = mods .. "Shift+" end
-
-    if mods ~= "" then
-      print("Modifiers: " .. mods:sub(1, -2)) -- 最後の "+" を削除
-    end
-  end,
-  { noremap = true, silent = true })
-
-
+-- クリップボードの設定
 if os.getenv("SSH_CONNECTION") ~= nil then
   vim.g.clipboard = {
     name = 'OSC 52',
@@ -39,15 +17,25 @@ if os.getenv("SSH_CONNECTION") ~= nil then
   }
 end
 
--- aider
-local Terminal = require('toggleterm.terminal').Terminal
-local aider = Terminal:new({ cmd = "aider", hidden = true, direction = "vertical" })
-function _aider_toggle()
-  aider:toggle(80)
-end
+-- キーマップリーダー
+vim.keymap.set('n', '<Leader>k', require('my_keymap_debugger'),
+  { noremap = true, silent = true, desc = 'Keymap Debugger' })
 
--- vim.api.nvim_create_autocmd("TermClose", {
---   callback = function()
---     vim.cmd("close")
---   end
--- })
+-- キーマップ
+local MyTerminal = require("my_toggle_terminal")
+_G._my_rightbelow_terminal = MyTerminal:new(20, 'belowright')
+_G._my_aider_terminal = MyTerminal:new(60, 'vertical belowright', 'aider', true)
+
+vim.keymap.set({ 'n', 't' }, '<F12>', '<cmd>lua _G._my_rightbelow_terminal:toggle()<CR>',
+  { noremap = true, silent = true, desc = 'Toggle Right Below Terminal' })
+vim.keymap.set('n', '<leader>ai', '<cmd>lua _G._my_aider_terminal:toggle()<CR>',
+  { noremap = true, silent = true, desc = 'Toggle Aider Terminal' })
+vim.keymap.set('n', '<leader>aa', '<cmd>CopilotChatToggle<CR>',
+  { noremap = true, silent = true, desc = 'Toggle Copilot Chat' })
+vim.keymap.set('n', '<leader>aq', function()
+    local input = vim.fn.input("Quick Chat: ")
+    if input ~= "" then
+      require("CopilotChat").ask(input, { selection = require("CopilotChat.select").buffer })
+    end
+  end,
+  { noremap = true, silent = true, desc = 'Quick Chat' })

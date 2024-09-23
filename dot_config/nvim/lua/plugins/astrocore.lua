@@ -52,13 +52,9 @@ return {
         ["<S-tab>"] = { function() require("astrocore.buffer").nav(-vim.v.count1) end, desc = "Previous buffer" },
 
         ["<leader><space>"] = { function() require('telescope.builtin').find_files() end, desc = "find files" },
-
-        -- toggle term
-        ["<F12>"] = { "<Cmd> ToggleTerm direction=horizontal size=25 <CR>", desc = "Toggle term horizontal" },
       },
       t = {
         ["<C-]>"] = { "<C-\\><C-n>", desc = "to normal mode" },
-        ["<F12>"] = { "<Cmd> ToggleTerm <CR>", desc = "close term" },
       }
     },
   },
