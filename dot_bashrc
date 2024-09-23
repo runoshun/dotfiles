@@ -85,6 +85,9 @@ fi
 
 if [ -f ~/.fzf.bash ]; then 
     export FZF_DEFAULT_OPTS='--tmux 80% --layout reverse --border'
+    export FZF_ALT_C_OPTS="
+  --walker-skip .git,node_modules,target,.venv,.android,wine-root
+  --preview 'tree -C {}'"
     source ~/.fzf.bash
 fi
 
