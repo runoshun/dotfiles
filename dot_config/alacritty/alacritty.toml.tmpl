@@ -29,7 +29,7 @@ dynamic_title = false
 
 [font]
 size = 14.5
-normal = { family = "JetBrainsMonoNL Nerd Font Mono", style = "Regular" }
+normal = { family = "Hack Nerd Font Mono", style = "Regular" }
 
 [colors]
 transparent_background_colors = true
@@ -46,6 +46,8 @@ bindings = [
 
 [env]
 TERM = "xterm-256color"
-
+{{ if eq .chezmoi.os "darwin" }}
+SHELL = "/opt/homebrew/bin/bash"
+{{ end }}
 # vim: set ft=toml :
 
