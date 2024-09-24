@@ -37,7 +37,7 @@ vim.keymap.set(
 -- キーマップ
 local MyTerminal = require("my_toggle_terminal")
 _G._my_rightbelow_terminal = MyTerminal:new(20, "belowright")
-_G._my_aider_terminal = MyTerminal:new(60, "vertical belowright", "aider", true)
+_G._my_aider_terminal = MyTerminal:new(60, "vertical belowright", "aider --env-file ~/.aider.env", true)
 
 vim.keymap.set(
 	{ "n", "t" },

@@ -11,6 +11,7 @@ alias python=python3
 alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
+alias cdg="cd $(git rev-parse --show-toplevel)"
 
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
@@ -119,19 +120,20 @@ if command -v aws_completer &> /dev/null; then
     complete -C "`which aws_completer`" awslocal
 fi
 
-auto-dev-instance() {
-  awsume study -a -o bedrock
+aws-auto-profiles() {
+  awsume marine-conv-dev -a -o marine-conv-dev-auto
   awsume study -a -o study-auto
-  #autossh -M 0 -N -f -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" study-dev-instance-launch
+  awsume study -a -o bedrock
+}
+
+auto-dev-instance() {
+aws-auto-profiles
   ssh study-dev-instance-launch
 }
 
 auto-marine-dev-instance() {
-  awsume study -a -o study-auto
-  awsume study -a -o bedrock
-  awsume marine-conv-dev -a -o marine-conv-dev-auto
+  aws-auto-profiles
   autossh -M 0 -N -f -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" marine-dev-instance-launch
-  #ssh marine-dev-instance-launch
 }
 
 portforward-to-utmlinux() {

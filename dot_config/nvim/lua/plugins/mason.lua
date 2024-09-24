@@ -21,6 +21,7 @@ return {
 		opts = {
 			ensure_installed = {
 				"stylua",
+				"actionlint",
 				-- add more arguments for adding more null-ls sources
 			},
 		},
