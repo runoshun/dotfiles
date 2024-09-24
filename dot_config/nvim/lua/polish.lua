@@ -36,7 +36,11 @@ vim.keymap.set(
 
 -- キーマップ
 local MyTerminal = require("my_toggle_terminal")
-_G._my_rightbelow_terminal = MyTerminal:new(20, "belowright", "/bin/bash")
+if string.sub(os.getenv("SHELL"), -4) ~= "bash" then
+	_G._my_rightbelow_terminal = MyTerminal:new(20, "belowright", "exec /bin/bash")
+else
+	_G._my_rightbelow_terminal = MyTerminal:new(20, "belowright")
+end
 _G._my_aider_terminal = MyTerminal:new(60, "vertical belowright", "aider", true)
 
 vim.keymap.set(
