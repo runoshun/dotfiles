@@ -8,8 +8,11 @@ return {
 
 	-- colorscheme
 	-- { import = "astrocommunity.colorscheme.nordic-nvim" },
+	{ import = "astrocommunity.colorscheme.nord-nvim" },
 	-- { import = "astrocommunity.colorscheme.sonokai" },
 	{ import = "astrocommunity.colorscheme.catppuccin" },
+	{ import = "astrocommunity.colorscheme.iceberg-vim" },
+	{ import = "astrocommunity.colorscheme.hybrid-nvim" },
 	-- { import = "astrocommunity.colorscheme.kanagawa-nvim" },
 	-- { import = "astrocommunity.colorscheme.kanagawa-paper-nvim" },
 	-- { import = "astrocommunity.colorscheme.github-nvim-theme" },
@@ -25,4 +28,5 @@ return {
 	-- misc
 	{ import = "astrocommunity.editing-support.copilotchat-nvim" },
 	{ import = "astrocommunity.docker.lazydocker" },
+	{ import = "astrocommunity.scrolling.nvim-scrollbar" },
 }

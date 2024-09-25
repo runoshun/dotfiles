@@ -31,7 +31,6 @@ local function button(sc, txt, keybind, keybind_opts)
   }
 end
 
-
 return {
   "goolord/alpha-nvim",
   opts = function(_, opts)
@@ -48,7 +47,7 @@ return {
       opts = {
         position = "center",
         hl = "Type",
-      }
+      },
     }
     local actions = {
       type = "group",
@@ -56,12 +55,12 @@ return {
         button("e", "  New file", ":ene <BAR> startinsert <CR>"),
         button("f", "  Find file", ":Telescope find_files<CR>"),
         button("r", "  Recent", ":Telescope oldfiles<CR>"),
-        button("s", "  Sessions", ":lua require(\"resession\").load(nil, { dir = \"dirsession\" })<CR>"),
+        button("s", "  Sessions", ':lua require("resession").load(nil, { dir = "dirsession" })<CR>'),
         button("c", "  Configs", ":e $MYVIMRC | :cd %:p:h | split . | wincmd k | pwd<CR>"),
       },
       opts = {
         spacing = 1,
-      }
+      },
     }
 
     local sess = require("resession").list({ dir = "dirsession" })
@@ -70,25 +69,26 @@ return {
       val = {},
       opts = {
         spacing = 1,
-      }
+      },
     }
     for i, s in ipairs(sess) do
-      if i > 5 then break end
+      if i > 5 then
+        break
+      end
 
       local path = s:gsub("_", "/")
       path = path:gsub("^" .. os.getenv("HOME"), "~")
       path = path:len() > 40 and path:sub(1, 20) .. "..." .. path:sub(-20) or path
 
       local load_opts = '{ dir = "dirsession", attach = true, reset = "auto" }'
-      table.insert(sessions.val,
-        button(tostring(i), path, string.format(
-          ":lua require(\"resession\").load('%s', %s)<CR>", s, load_opts)
-        )
+      table.insert(
+        sessions.val,
+        button(tostring(i), path, string.format(":lua require(\"resession\").load('%s', %s)<CR>", s, load_opts))
       )
     end
 
     opts.config.layout = {
-      { type = "padding", val = 13 },
+      { type = "padding", val = 8 },
       header,
       { type = "padding", val = 2 },
 
