@@ -8,10 +8,10 @@ fi
 
 # User specific aliases and functions
 alias python=python3
-alias ll='ls -alF'
-alias la='ls -A'
-alias l='ls -CF'
-alias cdg="cd \$(git rev-parse --show-toplevel)"
+alias l="exa --icons --git"
+alias ls="exa --icons --git"
+alias ll='exa --icons --git -l'
+alias cg="cd \$(git rev-parse --show-toplevel)"
 
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
@@ -68,6 +68,7 @@ compress () {
     fi
 }
 
+
 if [ -f ~/.env ]; then
     set -a && source ~/.env && set +a
 fi
@@ -118,6 +119,10 @@ alias mx='mise x'
 if command -v aws_completer &> /dev/null; then
     complete -C "`which aws_completer`" aws
     complete -C "`which aws_completer`" awslocal
+fi
+
+if command -v zoxide &>/dev/null; then
+    eval "$(zoxide init bash)"
 fi
 
 aws-auto-profiles() {
