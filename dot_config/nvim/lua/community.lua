@@ -24,6 +24,8 @@ return {
 	{ import = "astrocommunity.pack.python-ruff" },
 	{ import = "astrocommunity.pack.typescript-all-in-one" },
 	{ import = "astrocommunity.pack.rust" },
+	{ import = "astrocommunity.pack.bash" },
+	{ import = "astrocommunity.pack.markdown" },
 
 	-- misc
 	{ import = "astrocommunity.editing-support.copilotchat-nvim" },
