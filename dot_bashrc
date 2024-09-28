@@ -8,8 +8,6 @@ fi
 
 # User specific aliases and functions
 alias python=python3
-alias l="exa --icons --git"
-alias ll='exa --icons --git -l'
 alias cg="cd \$(git rev-parse --show-toplevel)"
 
 # enable color support of ls and also add handy aliases
