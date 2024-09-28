@@ -1,4 +1,4 @@
-export PATH=$HOME/.local/bin:$HOME/bin:/opt/homebrew/bin:$PATH
+export PATH=~/.local/share/mise/shims:$HOME/.local/bin:$HOME/bin:/opt/homebrew/bin:$PATH
 export EDITOR=nvim
 export BASH_SILENCE_DEPRECATION_WARNING=1
 
