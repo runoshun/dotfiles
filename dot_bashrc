@@ -1,9 +1,9 @@
 # binds
-if [ "$PS1" ];then
-bind '"\C-n": history-search-forward'
-bind '"\C-p": history-search-backward'
-bind '"\e[A": history-search-backward'
-bind '"\e[B": history-search-forward'
+if [ "$PS1" ]; then
+    bind '"\C-n": history-search-forward'
+    bind '"\C-p": history-search-backward'
+    bind '"\e[A": history-search-backward'
+    bind '"\e[B": history-search-forward'
 fi
 
 # User specific aliases and functions
@@ -20,51 +20,50 @@ if [ -x /usr/bin/dircolors ]; then
 fi
 
 # functions
-extract () {
-    if [ -f $1 ] ; then
+extract() {
+    if [ -f $1 ]; then
         case $1 in
-            *.tar.bz2)   tar xvjf $1    ;;
-            *.tar.gz)    tar xvzf $1    ;;
-            *.bz2)       bunzip2 $1     ;;
-            *.tar.xz)    tar -Jxvf $1   ;;
-            *.rar)       unrar x $1     ;;
-            *.gz)        gunzip $1      ;;
-            *.tar)       tar xvf $1     ;;
-            *.tbz2)      tar xvjf $1    ;;
-            *.tgz)       tar xvzf $1    ;;
-            *.zip)       unzip $1       ;;
-            *.Z)         uncompress $1  ;;
-            *.7z)        7z x $1        ;;
-            *)           echo "don't know how to extract '$1'..." ;;
+        *.tar.bz2) tar xvjf $1 ;;
+        *.tar.gz) tar xvzf $1 ;;
+        *.bz2) bunzip2 $1 ;;
+        *.tar.xz) tar -Jxvf $1 ;;
+        *.rar) unrar x $1 ;;
+        *.gz) gunzip $1 ;;
+        *.tar) tar xvf $1 ;;
+        *.tbz2) tar xvjf $1 ;;
+        *.tgz) tar xvzf $1 ;;
+        *.zip) unzip $1 ;;
+        *.Z) uncompress $1 ;;
+        *.7z) 7z x $1 ;;
+        *) echo "don't know how to extract '$1'..." ;;
         esac
     else
         echo "'$1' is not a valid file!"
     fi
 }
-compress () {
+compress() {
     if [ $# -ge 2 ]; then
         archive=$1
         shift
         case $archive in
-            *.tar.gz)    tar zcvf $archive $@   ;;
-            *.tgz)       tar zcvf $archive $@   ;;
-            *.tar.bz2)   tar Icvf $archive $@   ;;
-            *.tbz)       tar Icvf $archive $@   ;;
-            *.tar.xz)    tar -Jcvf $archive $@  ;;
-            *.bz2)       bzip2 $1               ;;
-            *.gz)        gzip $1                ;;
-            *.rar)       rar a $archive $@      ;;
-            *.tar)       tar cvf $1 $@          ;;
-            *.zip)       zip $archive $@        ;;
-            *.7z)        7z a $archive $@       ;;
-            *)           echo "don't know how to compress '$archive' ..." ;;
+        *.tar.gz) tar zcvf $archive $@ ;;
+        *.tgz) tar zcvf $archive $@ ;;
+        *.tar.bz2) tar Icvf $archive $@ ;;
+        *.tbz) tar Icvf $archive $@ ;;
+        *.tar.xz) tar -Jcvf $archive $@ ;;
+        *.bz2) bzip2 $1 ;;
+        *.gz) gzip $1 ;;
+        *.rar) rar a $archive $@ ;;
+        *.tar) tar cvf $1 $@ ;;
+        *.zip) zip $archive $@ ;;
+        *.7z) 7z a $archive $@ ;;
+        *) echo "don't know how to compress '$archive' ..." ;;
         esac
     else
         echo "args is not a valid!"
         echo "usage: compress <archive> <file> ..."
     fi
 }
-
 
 if [ -f ~/.env ]; then
     set -a && source ~/.env && set +a
@@ -82,13 +81,13 @@ if [ -f /etc/bash_completion ]; then
     source /etc/bash_completion
 fi
 
-if [ -f ~/.fzf.bash ]; then 
+if [ -f ~/.fzf.bash ]; then
     export FZF_DEFAULT_OPTS='--tmux 80% --layout reverse --border'
     export FZF_ALT_C_OPTS="--walker-skip .git,node_modules,target,.venv,.android,wine-root --preview 'tree -C {}'"
     source ~/.fzf.bash
 fi
 
-if command -v chezmoi &> /dev/null; then
+if command -v chezmoi &>/dev/null; then
     alias ch="chezmoi"
     alias che="chezmoi edit"
     alias cha="chezmoi apply"
@@ -98,8 +97,8 @@ if command -v chezmoi &> /dev/null; then
         chezmoi git diff
         read -p "ok? (y/N): " yn
         case "$yn" in
-          [yY]*) ;;
-          *) return;;
+        [yY]*) ;;
+        *) return ;;
         esac
         chezmoi git add .
         chezmoi git commit -- -m "$(chezmoi generate git-commit-message)"
@@ -111,9 +110,9 @@ alias awsume=". awsume"
 alias mr='mise r'
 alias mx='mise x'
 
-if command -v aws_completer &> /dev/null; then
-    complete -C "`which aws_completer`" aws
-    complete -C "`which aws_completer`" awslocal
+if command -v aws_completer &>/dev/null; then
+    complete -C "$(which aws_completer)" aws
+    complete -C "$(which aws_completer)" awslocal
 fi
 
 if command -v zoxide &>/dev/null; then
@@ -121,41 +120,42 @@ if command -v zoxide &>/dev/null; then
 fi
 
 aws-auto-profiles() {
-  awsume marine-conv-dev -a -o marine-conv-dev-auto
-  awsume study -a -o study-auto
-  awsume study -a -o bedrock
+    awsume marine-conv-dev -a -o marine-conv-dev-auto
+    awsume study -a -o study-auto
+    awsume study -a -o bedrock
 }
 
 auto-dev-instance() {
-  aws-auto-profiles
-  ssh study-dev-instance-launch
+    aws-auto-profiles
+    ssh study-dev-instance-launch
 }
 
 auto-marine-dev-instance() {
-  aws-auto-profiles
-  autossh -M 0 -N -f -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" marine-dev-instance-launch
+    aws-auto-profiles
+    autossh -M 0 -N -f -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" marine-dev-instance-launch
 }
 
-portforward-to-utmlinux() {
-    autossh -M 0 -N -f -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" \
+portforward-dev() {
+    autossh -M 0 -Nf -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" \
         -L 8080:localhost:8080 \
         -L 8888:localhost:8888 \
         -L 5173:localhost:5173 \
         -L 8000:localhost:8000 \
         -L 1080:localhost:1080 \
-        utm-linux 
+        -L 8787:localhost:8787 \
+        "$1"
 }
 
 attach-dev-container() {
     res=$(npx @devcontainers/cli up --workspace-folder ./ --dotfiles-repository https://github.com/runoshun/dotfiles)
     devcon_json=$(cat .devcontainer/devcontainer.json)
-    
-    if [ "$(echo $res | jq -r .outcome)" == "success" ]; then
-      wf=$(echo $devcon_json | jq -r '. | .workspaceFolder // "/workspace"')
-      ci=$(echo $res | jq -r .containerId)
-      docker exec -it -w $wf $ci bash
+
+    if [ "$(echo "$res" | jq -r .outcome)" == "success" ]; then
+        wf=$(echo "$devcon_json" | jq -r '. | .workspaceFolder // "/workspace"')
+        ci=$(echo "$res" | jq -r .containerId)
+        docker exec -it -w "$wf" "$ci" bash
     else
-      echo $res
+        echo "$res"
     fi
 }
 
