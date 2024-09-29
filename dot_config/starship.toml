@@ -16,6 +16,9 @@ disabled = true
 [python]
 disabled = true
 
+[rust]
+disabled = true
+
 [palettes.catppuccin_macchiato]
 rosewater = "#f4dbd6"
 flamingo = "#f0c6c6"
