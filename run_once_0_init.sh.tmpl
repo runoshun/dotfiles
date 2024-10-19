@@ -27,6 +27,12 @@ sudo echo "uname -m" > /usr/local/bin/arch
 sudo chmod +x /usr/local/bin/arch
 {{ end }}
 
+# install ubi
+curl --silent --location \
+    https://raw.githubusercontent.com/houseabsolute/ubi/master/bootstrap/bootstrap-ubi.sh |
+    sh
+
+# install mise
 curl https://mise.run | sh
 mise plugins install https://github.com/comdotlinux/asdf-lazydocker.git
 mise install python
