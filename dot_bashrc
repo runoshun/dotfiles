@@ -115,10 +115,6 @@ if command -v aws_completer &>/dev/null; then
     complete -C "$(which aws_completer)" awslocal
 fi
 
-if command -v zoxide &>/dev/null; then
-    eval "$(zoxide init bash)"
-fi
-
 aws-auto-profiles() {
     awsume marine-conv-dev -a -o marine-conv-dev-auto
     awsume study -a -o study-auto
