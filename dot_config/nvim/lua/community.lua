@@ -32,4 +32,5 @@ return {
 	{ import = "astrocommunity.editing-support.copilotchat-nvim" },
 	{ import = "astrocommunity.docker.lazydocker" },
 	{ import = "astrocommunity.scrolling.nvim-scrollbar" },
+	{ import = "astrocommunity.git.diffview-nvim" },
 }
