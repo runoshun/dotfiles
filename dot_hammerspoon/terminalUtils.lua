@@ -1,6 +1,6 @@
 local module = {}
 
-module.toggle_opacity = function()
+module.toggle_alacritty_opacity = function()
 	local alacritty_file_name = string.format("%s/.config/alacritty/alacritty.toml", os.getenv("HOME"))
 
 	local opaque = "opacity = 1.0"
