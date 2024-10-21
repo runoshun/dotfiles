@@ -134,6 +134,7 @@ auto-marine-dev-instance() {
 portforward-dev() {
     autossh -M 0 -Nf -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" \
         -L 8080:localhost:8080 \
+        -L 8089:localhost:8089 \
         -L 8888:localhost:8888 \
         -L 5173:localhost:5173 \
         -L 8000:localhost:8000 \
