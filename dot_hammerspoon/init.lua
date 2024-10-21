@@ -31,9 +31,9 @@ local double_press = require("ctrlDoublePress")
 local teminal = require("terminalUtils")
 
 double_press.timeFrame = 0.5
-double_press.action = teminal.launch_wezterm
--- double_press.action = teminal.launch_alacritty
---hs.hotkey.bind({ "cmd" }, "U", teminal.toggle_opacity)
+--double_press.action = teminal.launch_wezterm
+double_press.action = teminal.launch_alacritty
+hs.hotkey.bind({ "cmd" }, "U", teminal.toggle_alacritty_opacity)
 
 -- -- launcher
 -- local launcher = require("launcher")

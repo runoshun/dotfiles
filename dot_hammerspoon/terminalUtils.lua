@@ -4,7 +4,8 @@ module.toggle_alacritty_opacity = function()
 	local alacritty_file_name = string.format("%s/.config/alacritty/alacritty.toml", os.getenv("HOME"))
 
 	local opaque = "opacity = 1.0"
-	local transparent = "opacity = 0.75"
+	local transparent1 = "opacity = 0.80"
+	local transparent2 = "opacity = 0.60"
 
 	local file = io.open(alacritty_file_name)
 
@@ -12,9 +13,11 @@ module.toggle_alacritty_opacity = function()
 	file:close()
 
 	if string.match(content, opaque) then
-		content = string.gsub(content, opaque, transparent)
+		content = string.gsub(content, opaque, transparent1)
+	elseif string.match(content, transparent1) then
+		content = string.gsub(content, transparent1, transparent2)
 	else
-		content = string.gsub(content, transparent, opaque)
+		content = string.gsub(content, transparent2, opaque)
 	end
 
 	local fileedited = io.open(alacritty_file_name, "w")

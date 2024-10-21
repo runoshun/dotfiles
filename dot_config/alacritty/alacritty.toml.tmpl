@@ -1,8 +1,9 @@
+[general]
 import = [
   "~/.config/alacritty/hybrid.toml",
 ]
 
-[shell]
+[terminal.shell]
 {{ if eq .chezmoi.os "darwin" }}
 program = "/opt/homebrew/bin/bash"
 {{ else }}
