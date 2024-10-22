@@ -1,5 +1,6 @@
 #!/bin/bash
 
+{{ if eq .chezmoi.os "darwin" }}
 if command -v nvim &>/dev/null; then
   exit 0
 fi
@@ -13,3 +14,6 @@ cd alacritty || exit 1
 
 make app
 cp -r target/release/osx/Alacritty.app /Applications/
+{{ end }}
+
+# vim: set ft=bash :
