@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if command -v nvim &>/dev/null; then
+  exit 0
+fi
+echo "installing alacritty with sixel support"
+
+dir=$(mktemp -d /tmp/alacritty.XXXXXX)
+cd "$dir" || exit 1
+
+git clone https://github.com/ayosec/alacritty.git
+cd alacritty || exit 1
+
+make app
+cp -r target/release/osx/Alacritty.app /Applications/
