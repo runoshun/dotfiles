@@ -65,19 +65,19 @@ vim.keymap.set(
 
 vim.keymap.set(
 	"n",
-	"<leader>cp",
+	"<leader>app",
 	"<cmd>StartCopilotProxy<CR>",
 	{ noremap = true, silent = true, desc = "Start Copilot Proxy" }
 )
 vim.keymap.set(
 	"n",
-	"<leader>cs",
+	"<leader>aps",
 	"<cmd>StopCopilotProxy<CR>",
 	{ noremap = true, silent = true, desc = "Stop Copilot Proxy" }
 )
 vim.keymap.set(
 	"n",
-	"<leader>cr",
+	"<leader>apr",
 	"<cmd>RestartCopilotProxy<CR>",
 	{ noremap = true, silent = true, desc = "Restart Copilot Proxy" }
 )

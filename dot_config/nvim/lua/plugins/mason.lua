@@ -10,7 +10,6 @@ return {
 			ensure_installed = {
 				"lua_ls",
 				"rust_analyzer",
-				"spectral-language-server",
 				-- add more arguments for adding more language servers
 			},
 		},
