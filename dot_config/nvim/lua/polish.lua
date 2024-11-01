@@ -58,12 +58,15 @@ vim.keymap.set(
 	"<cmd>CopilotChatToggle<CR>",
 	{ noremap = true, silent = true, desc = "Toggle Copilot Chat" }
 )
-vim.keymap.set(
-	"n",
-	"<leader>cp",
-	"<cmd>StartCopilotProxy<CR>",
-	{ noremap = true, silent = true, desc = "Start Copilot Proxy" }
-)
+local copilot_server = require("copilot_server")
+
+vim.api.nvim_create_user_command('StartCopilotProxy', copilot_server.start, {})
+vim.api.nvim_create_user_command('StopCopilotProxy', copilot_server.stop, {})
+vim.api.nvim_create_user_command('RestartCopilotProxy', copilot_server.restart, {})
+
+vim.keymap.set("n", "<leader>cp", "<cmd>StartCopilotProxy<CR>", { noremap = true, silent = true, desc = "Start Copilot Proxy" })
+vim.keymap.set("n", "<leader>cs", "<cmd>StopCopilotProxy<CR>", { noremap = true, silent = true, desc = "Stop Copilot Proxy" })
+vim.keymap.set("n", "<leader>cr", "<cmd>RestartCopilotProxy<CR>", { noremap = true, silent = true, desc = "Restart Copilot Proxy" })
 
 vim.keymap.set("n", "<leader>aq", function()
 	local input = vim.fn.input("Quick Chat: ")
