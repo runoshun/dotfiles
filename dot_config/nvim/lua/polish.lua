@@ -1,7 +1,6 @@
 -- This will run last in the setup process and is a good place to configure
 -- things like custom filetypes. This just pure lua so anything that doesn't
 -- fit in the normal config locations above can go here
-require("copilot_server")
 
 -- クリップボードの設定
 local function paste()
@@ -40,6 +39,11 @@ local MyTerminal = require("my_toggle_terminal")
 _G._my_rightbelow_terminal = MyTerminal:new(15, "belowright")
 _G._my_aider_terminal = MyTerminal:new(60, "vertical belowright", "aider --env-file ~/.aider.env", true)
 
+local copilot_server = require("copilot_server")
+vim.api.nvim_create_user_command("StartCopilotProxy", copilot_server.start, {})
+vim.api.nvim_create_user_command("StopCopilotProxy", copilot_server.stop, {})
+vim.api.nvim_create_user_command("RestartCopilotProxy", copilot_server.restart, {})
+
 vim.keymap.set(
 	{ "n", "t" },
 	"<F12>",
@@ -58,15 +62,25 @@ vim.keymap.set(
 	"<cmd>CopilotChatToggle<CR>",
 	{ noremap = true, silent = true, desc = "Toggle Copilot Chat" }
 )
-local copilot_server = require("copilot_server")
 
-vim.api.nvim_create_user_command('StartCopilotProxy', copilot_server.start, {})
-vim.api.nvim_create_user_command('StopCopilotProxy', copilot_server.stop, {})
-vim.api.nvim_create_user_command('RestartCopilotProxy', copilot_server.restart, {})
-
-vim.keymap.set("n", "<leader>cp", "<cmd>StartCopilotProxy<CR>", { noremap = true, silent = true, desc = "Start Copilot Proxy" })
-vim.keymap.set("n", "<leader>cs", "<cmd>StopCopilotProxy<CR>", { noremap = true, silent = true, desc = "Stop Copilot Proxy" })
-vim.keymap.set("n", "<leader>cr", "<cmd>RestartCopilotProxy<CR>", { noremap = true, silent = true, desc = "Restart Copilot Proxy" })
+vim.keymap.set(
+	"n",
+	"<leader>cp",
+	"<cmd>StartCopilotProxy<CR>",
+	{ noremap = true, silent = true, desc = "Start Copilot Proxy" }
+)
+vim.keymap.set(
+	"n",
+	"<leader>cs",
+	"<cmd>StopCopilotProxy<CR>",
+	{ noremap = true, silent = true, desc = "Stop Copilot Proxy" }
+)
+vim.keymap.set(
+	"n",
+	"<leader>cr",
+	"<cmd>RestartCopilotProxy<CR>",
+	{ noremap = true, silent = true, desc = "Restart Copilot Proxy" }
+)
 
 vim.keymap.set("n", "<leader>aq", function()
 	local input = vim.fn.input("Quick Chat: ")
