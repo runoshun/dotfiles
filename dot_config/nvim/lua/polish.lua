@@ -34,6 +34,11 @@ vim.keymap.set(
 	{ noremap = true, silent = true, desc = "Keymap Debugger" }
 )
 
+-- コマンドの登録
+vim.api.nvim_create_user_command('StartCopilotProxy', function()
+  vim.fn.jobstart('deno run -A dot_config/nvim/scripts/github-copilot-proxy/main.ts', { detach = true })
+end, {})
+
 -- キーマップ
 local MyTerminal = require("my_toggle_terminal")
 _G._my_rightbelow_terminal = MyTerminal:new(15, "belowright")
@@ -57,6 +62,8 @@ vim.keymap.set(
 	"<cmd>CopilotChatToggle<CR>",
 	{ noremap = true, silent = true, desc = "Toggle Copilot Chat" }
 )
+vim.keymap.set("n", "<leader>cp", "<cmd>StartCopilotProxy<CR>", { noremap = true, silent = true, desc = "Start Copilot Proxy" })
+
 vim.keymap.set("n", "<leader>aq", function()
 	local input = vim.fn.input("Quick Chat: ")
 	if input ~= "" then
