@@ -17,7 +17,7 @@ return {
 	},
 	{
 		"github/copilot.vim",
-		event = "InsertEnter",
+		event = "BufEnter",
 		config = function()
 			vim.g.copilot_filetypes = {
 				yaml = true,
