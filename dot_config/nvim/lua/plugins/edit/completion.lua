@@ -38,4 +38,14 @@ return {
 		},
 		config = true,
 	},
+	{
+		"CopilotC-Nvim/CopilotChat.nvim",
+		opts = {
+			window = {
+				layout = "vertical",
+				width = 0.4, -- absolute width in columns
+				height = vim.o.lines - 4, -- absolute height in rows, subtract for command line and status line
+			},
+		},
+	},
 }
