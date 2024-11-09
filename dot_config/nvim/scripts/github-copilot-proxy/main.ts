@@ -1,5 +1,6 @@
 import { exists } from "jsr:@std/fs";
 import * as log from "jsr:@std/log";
+import { parse } from "jsr:@std/flags";
 
 log.setup({
   handlers: {
@@ -182,8 +183,52 @@ async function handler(req: Request): Promise<Response> {
     return new Response("Internal Server Error", { status: 500 });
   }
 }
-Deno.serve({
-  port: 8001,
-  hostname: "127.0.0.1",
-  handler: handler,
-});
+function generateAiderConfig() {
+  const config = {
+    model: "copilot",
+    api_base: "http://localhost:8001",
+    api_key: "dummy",  // Copilotではapi_keyは使用しないがaiderの設定として必要
+  };
+  console.log(JSON.stringify(config, null, 2));
+}
+
+function main() {
+  const flags = parse(Deno.args, {
+    string: [],
+    boolean: ["help"],
+    default: { help: false },
+  });
+
+  if (flags.help || Deno.args.length === 0) {
+    console.log(`Usage:
+  start         - Start the Copilot proxy server
+  gen aider     - Generate aider configuration
+  help          - Show this help message`);
+    Deno.exit(0);
+  }
+
+  const command = Deno.args[0];
+  
+  switch (command) {
+    case "start":
+      Deno.serve({
+        port: 8001,
+        hostname: "127.0.0.1",
+        handler: handler,
+      });
+      break;
+    case "gen":
+      if (Deno.args[1] === "aider") {
+        generateAiderConfig();
+      } else {
+        console.error("Unknown gen command. Available: aider");
+        Deno.exit(1);
+      }
+      break;
+    default:
+      console.error(`Unknown command: ${command}`);
+      Deno.exit(1);
+  }
+}
+
+main();
