@@ -14,7 +14,19 @@ function Terminal:new(height, position, command, exit)
 end
 
 -- ターミナルウィンドウを開くメソッド
-function Terminal:open()
+function Terminal:open(...)
+	-- 実行するコマンドを最初に取得
+	local cmd
+	if self.command then
+		if type(self.command) == "function" then
+			-- 関数の場合は実行結果を使用
+			cmd = self.command(...)
+		else
+			-- 文字列の場合はそのまま使用
+			cmd = self.command
+		end
+	end
+
 	vim.api.nvim_command(self.position .. " " .. self.height .. "split | terminal")
 	self.bufnr = vim.api.nvim_get_current_buf()
 	-- ターミナルバッファをバッファ一覧から隠す
@@ -32,9 +44,8 @@ function Terminal:open()
 	})
 	-- ターミナルを開いたときにインサートモードに入る
 	vim.api.nvim_command("startinsert")
-	-- 指定されたコマンドを実行する
-	if self.command then
-		local cmd = self.command
+
+	if cmd then -- cmdがnilでない場合のみ実行
 		if self.exit then
 			cmd = cmd .. "; exit"
 		end
@@ -43,7 +54,7 @@ function Terminal:open()
 end
 
 -- ターミナルウィンドウの表示非表示を切り替えるメソッド
-function Terminal:toggle()
+function Terminal:toggle(...)
 	if self.bufnr and vim.api.nvim_buf_is_valid(self.bufnr) then
 		local winid = vim.fn.bufwinid(self.bufnr)
 		if winid ~= -1 then
@@ -53,7 +64,7 @@ function Terminal:toggle()
 			vim.api.nvim_command("startinsert")
 		end
 	else
-		self:open()
+		self:open(...)
 	end
 end
 

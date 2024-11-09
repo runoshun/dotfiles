@@ -37,12 +37,31 @@ vim.keymap.set(
 -- キーマップ
 local MyTerminal = require("my_toggle_terminal")
 _G._my_rightbelow_terminal = MyTerminal:new(15, "belowright")
-_G._my_aider_terminal = MyTerminal:new(60, "vertical belowright", "aider --env-file ~/.aider.env", true)
+_G._my_aider_terminal = MyTerminal:new(60, "vertical belowright", function(files)
+	local file_args = {}
+	if files == "all" then
+		local cwd = vim.fn.getcwd()
+		for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+			if vim.api.nvim_buf_is_loaded(bufnr) then
+				local bufpath = vim.api.nvim_buf_get_name(bufnr)
+				if bufpath and bufpath ~= "" and vim.startswith(bufpath, cwd) then
+					table.insert(file_args, "--file")
+					table.insert(file_args, bufpath)
+				end
+			end
+		end
+	else
+		local buf_fn = vim.fn.expand("%:p")
+		file_args = { "--file", buf_fn }
+	end
+	return "aider --env-file ~/.aider.env " .. table.concat(file_args, " ")
+end, true)
 
 local copilot_server = require("copilot_server")
 vim.api.nvim_create_user_command("StartCopilotProxy", copilot_server.start, {})
 vim.api.nvim_create_user_command("StopCopilotProxy", copilot_server.stop, {})
 vim.api.nvim_create_user_command("RestartCopilotProxy", copilot_server.restart, {})
+vim.api.nvim_create_user_command("GenerateAiderSettings", copilot_server.gen_aider_settings, {})
 
 vim.keymap.set(
 	{ "n", "t" },
@@ -58,6 +77,12 @@ vim.keymap.set(
 )
 vim.keymap.set(
 	"n",
+	"<leader>aI",
+	"<cmd>lua _G._my_aider_terminal:toggle('all')<CR>",
+	{ noremap = true, silent = true, desc = "Toggle Aider Terminal" }
+)
+vim.keymap.set(
+	"n",
 	"<leader>aa",
 	"<cmd>CopilotChatToggle<CR>",
 	{ noremap = true, silent = true, desc = "Toggle Copilot Chat" }
@@ -65,26 +90,25 @@ vim.keymap.set(
 
 vim.keymap.set(
 	"n",
-	"<leader>app",
+	"<leader>aPp",
 	"<cmd>StartCopilotProxy<CR>",
 	{ noremap = true, silent = true, desc = "Start Copilot Proxy" }
 )
 vim.keymap.set(
 	"n",
-	"<leader>aps",
+	"<leader>aPs",
 	"<cmd>StopCopilotProxy<CR>",
 	{ noremap = true, silent = true, desc = "Stop Copilot Proxy" }
 )
 vim.keymap.set(
 	"n",
-	"<leader>apr",
+	"<leader>aPr",
 	"<cmd>RestartCopilotProxy<CR>",
 	{ noremap = true, silent = true, desc = "Restart Copilot Proxy" }
 )
-
-vim.keymap.set("n", "<leader>aq", function()
-	local input = vim.fn.input("Quick Chat: ")
-	if input ~= "" then
-		require("CopilotChat").ask(input, { selection = require("CopilotChat.select").buffer })
-	end
-end, { noremap = true, silent = true, desc = "Quick Chat" })
+vim.keymap.set(
+	"n",
+	"<leader>aPg",
+	"<cmd>GenerateAiderSettings<CR>",
+	{ noremap = true, silent = true, desc = "Generate Aider Settings" }
+)

@@ -33,4 +33,5 @@ return {
 	{ import = "astrocommunity.docker.lazydocker" },
 	{ import = "astrocommunity.scrolling.nvim-scrollbar" },
 	{ import = "astrocommunity.git.diffview-nvim" },
+	{ import = "astrocommunity.file-explorer.telescope-file-browser-nvim" },
 }

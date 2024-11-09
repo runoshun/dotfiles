@@ -22,6 +22,7 @@ return {
 			ensure_installed = {
 				"stylua",
 				"actionlint",
+				"biome",
 				-- add more arguments for adding more null-ls sources
 			},
 		},

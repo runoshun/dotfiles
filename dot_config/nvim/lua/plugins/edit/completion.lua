@@ -28,24 +28,18 @@ return {
 				javascript = true,
 				lua = true,
 			}
+			vim.keymap.set("i", "<C-J>", 'copilot#Accept("\\<CR>")', {
+				expr = true,
+				replace_keycodes = false,
+			})
 		end,
 	},
-	{
-		"olimorris/codecompanion.nvim",
-		dependencies = {
-			"nvim-lua/plenary.nvim",
-			{ "stevearc/dressing.nvim", opts = {} }, -- Optional: Improves `vim.ui.select`
-		},
-		config = true,
-	},
-	{
-		"CopilotC-Nvim/CopilotChat.nvim",
-		opts = {
-			window = {
-				layout = "vertical",
-				width = 0.4, -- absolute width in columns
-				height = vim.o.lines - 4, -- absolute height in rows, subtract for command line and status line
-			},
-		},
-	},
+	-- {
+	-- 	"olimorris/codecompanion.nvim",
+	-- 	dependencies = {
+	-- 		"nvim-lua/plenary.nvim",
+	-- 		{ "stevearc/dressing.nvim", opts = {} }, -- Optional: Improves `vim.ui.select`
+	-- 	},
+	-- 	config = true,
+	-- },
 }
