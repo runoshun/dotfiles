@@ -139,21 +139,20 @@ return {
 		{ "AstroNvim/astroui", opts = { icons = { CopilotChat = "" } } },
 	},
 	config = function()
-		-- local Copilot = require("CopilotChat.copilot")
+		-- Disable the enable_claude function
+		local Copilot = require("CopilotChat.copilot")
+		Copilot.enable_claude = function() end
+
 		require("CopilotChat").setup({
 			model = "claude-3.5-sonnet",
 			context = "buffer",
 			show_help = false,
 			window = {
 				layout = "vertical",
-				width = 74,           -- absolute width in columns
+				width = 74, -- absolute width in columns
 				height = vim.o.lines - 4, -- absolute height in rows, subtract for command line and status line
 			},
 			mappings = {
-				complete = {
-					detail = "Use @<C-n> or /<C-n> for options.",
-					insert = "<C-n>",
-				},
 				reset = {
 					normal = "<C-x>",
 					insert = "<C-x>",
@@ -194,12 +193,10 @@ return {
 					prompt = "ファイル内の次の問題を支援してください:",
 				},
 				Commit = {
-					prompt =
-					"変更のコミットメッセージをcommitizenの規約に従って日本語で書いてください。タイトルは最大50文字、メッセージは72文字で折り返してください。メッセージ全体をgitcommit言語のコードブロックで囲んでください。",
+					prompt = "変更のコミットメッセージをcommitizenの規約に従って日本語で書いてください。タイトルは最大50文字、メッセージは72文字で折り返してください。メッセージ全体をgitcommit言語のコードブロックで囲んでください。",
 				},
 				CommitStaged = {
-					prompt =
-					"変更のコミットメッセージをcommitizenの規約に従って日本語で書いてください。タイトルは最大50文字、メッセージは72文字で折り返してください。メッセージ全体をgitcommit言語のコードブロックで囲んでください。",
+					prompt = "変更のコミットメッセージをcommitizenの規約に従って日本語で書いてください。タイトルは最大50文字、メッセージは72文字で折り返してください。メッセージ全体をgitcommit言語のコードブロックで囲んでください。",
 				},
 			},
 		})
