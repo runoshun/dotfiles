@@ -34,4 +34,5 @@ return {
 	{ import = "astrocommunity.scrolling.nvim-scrollbar" },
 	{ import = "astrocommunity.git.diffview-nvim" },
 	{ import = "astrocommunity.file-explorer.telescope-file-browser-nvim" },
+	{ import = "astrocommunity.utility.telescope-live-grep-args-nvim" },
 }
