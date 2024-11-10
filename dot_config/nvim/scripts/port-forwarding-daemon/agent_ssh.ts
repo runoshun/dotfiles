@@ -1,5 +1,6 @@
 import { PortWatcher } from "./lib/port_watcher.ts";
 import { DockerDetector } from "./lib/docker_detector.ts";
+import { addForwarding, deleteForwarding } from "./lib/ssh_forwarding.ts";
 declare const dockerServerCode: string;
 
 if (Deno.args.length !== 1) {
@@ -80,16 +81,10 @@ const watcher = new PortWatcher(
 		console.log(`New port detected: ${port}`);
 
 		try {
-			await fetch(forwardUrl, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					localPort: port,
-					remoteHost: "localhost",
-					remotePort: port,
-				}),
+			await addForwarding(forwardUrl, {
+				localPort: port,
+				remoteHost: "localhost",
+				remotePort: port,
 			});
 		} catch (error) {
 			console.error("Failed to send forwarding request:", error);
@@ -98,9 +93,7 @@ const watcher = new PortWatcher(
 	async (port: number) => {
 		console.log(`Port closed: ${port}`);
 		try {
-			await fetch(`${forwardUrl}?remotePort=${port}`, {
-				method: "DELETE",
-			});
+			await deleteForwarding(forwardUrl, port);
 		} catch (error) {
 			console.error("Failed to send stop forwarding request:", error);
 		}
