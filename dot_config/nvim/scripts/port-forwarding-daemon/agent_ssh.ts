@@ -1,6 +1,6 @@
 import { PortWatcher } from "./lib/port_watcher.ts";
 import { DockerDetector } from "./lib/docker_detector.ts";
-import { Bundler } from "./lib/bundler.ts";
+declare const dockerServerCode: string;
 
 if (Deno.args.length !== 1) {
 	console.error("Usage: deno run remote_server.ts <forward-url>");
@@ -14,10 +14,11 @@ const DOCKER_LABEL = "port.forwarding.enabled";
 
 // Function to inject and run docker_server in a container
 async function injectAndRunServer(containerId: string) {
+	const scriptPath = "/tmp/agent_docker.ts";
 	try {
 		// Copy server code to container
 		const copyCmd = new Deno.Command("docker", {
-			args: ["exec", containerId, "sh", "-c", "cat > /tmp/docker_server.ts"],
+			args: ["exec", containerId, "sh", "-c", `cat > ${scriptPath}`],
 			stdin: "piped",
 		}).spawn();
 
@@ -28,16 +29,28 @@ async function injectAndRunServer(containerId: string) {
 		}
 		await copyCmd.status;
 
+		// Install Deno in container
+		const installCmd = new Deno.Command("docker", {
+			args: [
+				"exec",
+				containerId,
+				"sh",
+				"-c",
+				"curl -fsSL https://deno.land/install.sh | sh",
+			],
+		}).spawn();
+		await installCmd.status;
+
 		// Run server in container
 		const runCmd = new Deno.Command("docker", {
 			args: [
 				"exec",
-				"-d",  // Run in background
+				"-d", // Run in background
 				containerId,
 				"deno",
 				"run",
 				"-A",
-				"/tmp/docker_server.ts",
+				scriptPath,
 				`http://host.docker.internal:${new URL(forwardUrl).port}`,
 			],
 		}).spawn();
@@ -60,7 +73,6 @@ const dockerDetector = new DockerDetector(
 		console.log(`Container stopped: ${container.name}`);
 	},
 );
-dockerDetector.start();
 
 // Watch for new ports
 const watcher = new PortWatcher(
@@ -95,7 +107,10 @@ const watcher = new PortWatcher(
 	},
 );
 
-console.log(`Port watcher started on remote, forward server: ${forwardUrl}`);
+console.log(
+	`Port and docker container watcher started on remote, forward server: ${forwardUrl}`,
+);
+dockerDetector.start();
 watcher.start();
 
 // Cleanup on exit

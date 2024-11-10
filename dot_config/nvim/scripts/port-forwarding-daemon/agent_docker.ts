@@ -61,9 +61,12 @@ const watcher = new PortWatcher(
 			}
 
 			// Notify the management server
-			await fetch(`${forwardUrl}?remotePort=${port}`, {
-				method: "DELETE",
-			});
+			await fetch(
+				`${forwardUrl}?remotePort=${port}&remoteHost=${containerIp}`,
+				{
+					method: "DELETE",
+				},
+			);
 		} catch (error) {
 			console.error("Failed to stop port forwarding:", error);
 		}

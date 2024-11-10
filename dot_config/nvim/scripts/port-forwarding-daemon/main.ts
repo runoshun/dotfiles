@@ -39,10 +39,10 @@ const remoteServerProcess = new Deno.Command("ssh", {
 // Bundle server codes
 const bundler = new Bundler();
 const remoteServerCode = await bundler.bundle(
-	import.meta.resolve("./remote_server.ts"),
+	import.meta.resolve("./agent_ssh.ts"),
 );
 const dockerServerCode = await bundler.bundle(
-	import.meta.resolve("./docker_server.ts"),
+	import.meta.resolve("./agent_docker.ts"),
 );
 
 // Combine both server codes with a separator
