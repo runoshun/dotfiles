@@ -2,7 +2,7 @@ import { SSHForwardingServer } from "./lib/ssh_forwarding.ts";
 import { Bundler } from "./lib/bundler.ts";
 
 const LOCAL_FORWARDING_PORT = 19876;
-const SSH_MASTER_CONTROL_PATH = `/tmp/ssh_mux_${Deno.pid}_%h_%p_%r`;
+const SSH_MASTER_CONTROL_PATH = `/tmp/ssh_mux_%h_%p_%r`;
 
 if (Deno.args.length !== 1) {
 	console.error("Usage: deno run main.ts <remote-host>");

@@ -1,5 +1,6 @@
 interface ForwardingRequest {
 	localPort: number;
+	remoteHost?: string;
 	remotePort: number;
 }
 
@@ -12,7 +13,8 @@ class SSHForwardingManager {
 	) {}
 
 	startForwarding(request: ForwardingRequest): void {
-		const key = `${request.localPort}:${request.remotePort}`;
+		const remoteHost = request.remoteHost ?? "localhost";
+		const key = `${request.localPort}:${remoteHost}:${request.remotePort}`;
 
 		// すでに同じ転送が存在する場合は何もしない
 		if (this.processes.has(key)) {
@@ -22,7 +24,7 @@ class SSHForwardingManager {
 			"-o",
 			`ControlPath=${this.controlPath}`,
 			"-NL",
-			`${request.localPort}:localhost:${request.remotePort}`,
+			`${request.localPort}:${remoteHost}:${request.remotePort}`,
 			this.remoteHost,
 		];
 		const sshProcess = new Deno.Command("ssh", { args: args }).spawn();
@@ -33,8 +35,8 @@ class SSHForwardingManager {
 		});
 	}
 
-	stopForwarding(remotePort: number): void {
-		const pat = `:${remotePort}`;
+	stopForwarding(remotePort: number, remoteHost?: string): void {
+		const pat = `${remoteHost ?? "localhost"}:${remotePort}`;
 		for (const [key, process] of this.processes) {
 			if (key.endsWith(pat)) {
 				process.kill("SIGTERM");
