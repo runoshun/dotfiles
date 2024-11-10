@@ -12,8 +12,8 @@ export class PortWatcher {
 	private intervalId: number | undefined;
 
 	constructor(
-		private readonly callback: (port: number) => void,
-		private readonly removeCallback: (port: number) => void,
+		private readonly onPortOpen: (port: number) => void,
+		private readonly onPortClose: (port: number) => void,
 		private readonly uid: number = Deno.uid() ?? 0,
 		private readonly interval: number = 1000,
 	) {}
@@ -68,13 +68,13 @@ export class PortWatcher {
 		// Find new ports
 		for (const port of listeningPorts) {
 			if (!this.currentPorts.has(port) && !initial) {
-				this.callback(port);
+				this.onPortOpen(port);
 			}
 		}
 		// Find removed ports
 		for (const port of this.currentPorts) {
 			if (!listeningPorts.has(port) && !initial) {
-				this.removeCallback(port);
+				this.onPortClose(port);
 			}
 		}
 

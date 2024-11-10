@@ -85,9 +85,10 @@ export class SSHForwardingServer {
 			} else if (request.method === "DELETE") {
 				const url = new URL(request.url);
 				const remotePort = url.searchParams.get("remotePort");
+				const remoteHost = url.searchParams.get("remoteHost") ?? "localhost";
 
 				if (remotePort) {
-					this.manager.stopForwarding(parseInt(remotePort));
+					this.manager.stopForwarding(parseInt(remotePort), remoteHost);
 					return new Response("Forwarding stopped", { status: 200 });
 				}
 				return new Response("Invalid request", { status: 400 });
@@ -99,5 +100,41 @@ export class SSHForwardingServer {
 
 	stop() {
 		this.manager.stopAll();
+	}
+}
+
+export async function addForwarding(
+	serverUrl: string,
+	request: ForwardingRequest,
+) {
+	try {
+		await fetch(serverUrl, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(request),
+		});
+	} catch (error) {
+		console.error("Failed to send forwarding request:", error);
+	}
+}
+
+export async function deleteForwarding(
+	serverUrl: string,
+	remotePort: number,
+	remoteHost?: string,
+) {
+	try {
+		await fetch(
+			`${serverUrl}?remotePort=${remotePort}&remoteHost=${
+				remoteHost ?? "localhost"
+			}`,
+			{
+				method: "DELETE",
+			},
+		);
+	} catch (error) {
+		console.error("Failed to send stop forwarding request:", error);
 	}
 }
