@@ -37,16 +37,17 @@ vim.keymap.set(
 -- キーマップ
 local MyTerminal = require("my_toggle_terminal")
 _G._my_rightbelow_terminal = MyTerminal:new(15, "belowright")
-_G._my_aider_terminal = MyTerminal:new(60, "vertical belowright", function(files)
+_G._my_aider_terminal = MyTerminal:new(72, "vertical belowright", function(files)
 	local file_args = {}
 	if files == "all" then
 		local cwd = vim.fn.getcwd()
 		for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
 			if vim.api.nvim_buf_is_loaded(bufnr) then
 				local bufpath = vim.api.nvim_buf_get_name(bufnr)
-				if bufpath and bufpath ~= "" and vim.startswith(bufpath, cwd) then
+				local file_exsit = vim.fn.filereadable(bufpath)
+				if file_exsit == 1 and vim.startswith(bufpath, cwd) then
 					table.insert(file_args, "--file")
-					table.insert(file_args, bufpath)
+					table.insert(file_args, '"' .. bufpath .. '"')
 				end
 			end
 		end
