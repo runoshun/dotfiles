@@ -14,6 +14,7 @@ export class PortWatcher {
 	constructor(
 		private readonly onPortOpen: (port: number) => void,
 		private readonly onPortClose: (port: number) => void,
+		private readonly maxPort: number = 65535,
 		private readonly uid: number = Deno.uid() ?? 0,
 		private readonly interval: number = 1000,
 	) {}
@@ -67,13 +68,13 @@ export class PortWatcher {
 
 		// Find new ports
 		for (const port of listeningPorts) {
-			if (!this.currentPorts.has(port) && !initial) {
+			if (!this.currentPorts.has(port) && !initial && port <= this.maxPort) {
 				this.onPortOpen(port);
 			}
 		}
 		// Find removed ports
 		for (const port of this.currentPorts) {
-			if (!listeningPorts.has(port) && !initial) {
+			if (!listeningPorts.has(port) && !initial && port <= this.maxPort) {
 				this.onPortClose(port);
 			}
 		}

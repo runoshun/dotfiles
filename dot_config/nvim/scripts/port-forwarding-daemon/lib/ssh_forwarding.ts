@@ -103,7 +103,7 @@ export class SSHForwardingServer {
 	}
 }
 
-export async function addForwarding(
+export async function addSshForwarding(
 	serverUrl: string,
 	request: ForwardingRequest,
 ) {
@@ -120,7 +120,7 @@ export async function addForwarding(
 	}
 }
 
-export async function deleteForwarding(
+export async function deleteSshForwarding(
 	serverUrl: string,
 	remotePort: number,
 	remoteHost?: string,

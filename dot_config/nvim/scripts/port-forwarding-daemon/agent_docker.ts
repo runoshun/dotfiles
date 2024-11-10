@@ -1,6 +1,7 @@
 import { PortWatcher } from "./lib/port_watcher.ts";
 import { Forwarder } from "./lib/socat.ts";
-import { addForwarding, deleteForwarding } from "./lib/ssh_forwarding.ts";
+import { addSshForwarding, deleteSshForwarding } from "./lib/ssh_forwarding.ts";
+deleteSshForwarding;
 
 if (Deno.args.length !== 1) {
 	console.error("Usage: deno run docker_server.ts <forward-url>");
@@ -25,7 +26,7 @@ const watcher = new PortWatcher(
 			// Create a new forwarder for this port
 			const forwarder = new Forwarder({
 				sourceType: "tcp",
-				sourceAddress: "0.0.0.0", // Listen on all interfaces
+				sourceAddress: containerIp,
 				sourcePort: randomPort,
 				targetType: "tcp",
 				targetAddress: "localhost",
@@ -35,8 +36,8 @@ const watcher = new PortWatcher(
 			forwarder.start();
 			forwarders.set(port, forwarder);
 
-			// Notify the management server
-			await addForwarding(forwardUrl, {
+			// Notify to the management server
+			await addSshForwarding(forwardUrl, {
 				localPort: port,
 				remoteHost: containerIp,
 				remotePort: randomPort,
@@ -56,11 +57,12 @@ const watcher = new PortWatcher(
 			}
 
 			// Notify the management server
-			await deleteForwarding(forwardUrl, port, containerIp);
+			await deleteSshForwarding(forwardUrl, port, containerIp);
 		} catch (error) {
 			console.error("Failed to stop port forwarding:", error);
 		}
 	},
+	20000,
 );
 
 console.log(`Docker port watcher started, forward server: ${forwardUrl}`);
