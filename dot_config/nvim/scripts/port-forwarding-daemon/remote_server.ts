@@ -1,4 +1,6 @@
 import { PortWatcher } from "./lib/port_watcher.ts";
+import { DockerDetector } from "./lib/docker_detector.ts";
+import { Bundler } from "./lib/bundler.ts";
 
 if (Deno.args.length !== 1) {
 	console.error("Usage: deno run remote_server.ts <forward-url>");
@@ -6,6 +8,63 @@ if (Deno.args.length !== 1) {
 }
 
 const forwardUrl = Deno.args[0];
+const DOCKER_LABEL = "port.forwarding.enabled";
+
+// Bundle docker_server.ts for injection
+const bundler = new Bundler();
+const dockerServerCode = await bundler.bundle(
+	import.meta.resolve("./docker_server.ts"),
+);
+
+// Function to inject and run docker_server in a container
+async function injectAndRunServer(containerId: string) {
+	try {
+		// Copy server code to container
+		const copyCmd = new Deno.Command("docker", {
+			args: ["exec", containerId, "sh", "-c", "cat > /tmp/docker_server.ts"],
+			stdin: "piped",
+		}).spawn();
+
+		if (copyCmd.stdin) {
+			const writer = copyCmd.stdin.getWriter();
+			await writer.write(new TextEncoder().encode(dockerServerCode));
+			await writer.close();
+		}
+		await copyCmd.status;
+
+		// Run server in container
+		const runCmd = new Deno.Command("docker", {
+			args: [
+				"exec",
+				"-d",  // Run in background
+				containerId,
+				"deno",
+				"run",
+				"-A",
+				"/tmp/docker_server.ts",
+				`http://host.docker.internal:${new URL(forwardUrl).port}`,
+			],
+		}).spawn();
+		await runCmd.status;
+
+		console.log(`Started port forwarding server in container ${containerId}`);
+	} catch (error) {
+		console.error(`Failed to setup container ${containerId}:`, error);
+	}
+}
+
+// Setup Docker container monitoring
+const dockerDetector = new DockerDetector(
+	DOCKER_LABEL,
+	(container) => {
+		console.log(`New container detected: ${container.name}`);
+		injectAndRunServer(container.id);
+	},
+	(container) => {
+		console.log(`Container stopped: ${container.name}`);
+	},
+);
+dockerDetector.start();
 
 // Watch for new ports
 const watcher = new PortWatcher(
@@ -42,6 +101,16 @@ const watcher = new PortWatcher(
 
 console.log(`Port watcher started on remote, forward server: ${forwardUrl}`);
 watcher.start();
+
+// Cleanup on exit
+const cleanup = () => {
+	watcher.stop();
+	dockerDetector.stop();
+	Deno.exit(0);
+};
+
+Deno.addSignalListener("SIGINT", cleanup);
+Deno.addSignalListener("SIGTERM", cleanup);
 
 // Keep the process running
 await new Promise(() => {});
