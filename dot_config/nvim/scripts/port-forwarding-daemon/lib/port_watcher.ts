@@ -1,3 +1,5 @@
+import * as log from "jsr:@std/log";
+
 export interface TcpEntry {
 	localAddress: string;
 	localPort: number;

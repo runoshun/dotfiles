@@ -1,3 +1,5 @@
+import * as log from "jsr:@std/log";
+
 interface ForwardingRequest {
 	localPort: number;
 	remoteHost?: string;
