@@ -1,5 +1,22 @@
+import * as log from "jsr:@std/log";
+
 import { SSHForwardingServer } from "./lib/ssh_forwarding.ts";
 import { Bundler } from "./lib/bundler.ts";
+
+log.setup({
+	handlers: {
+		default: new log.ConsoleHandler("DEBUG", {
+			formatter: log.formatters.jsonFormatter,
+			useColors: false,
+		}),
+	},
+	loggers: {
+		default: {
+			level: "INFO",
+			handlers: ["default"],
+		},
+	},
+});
 
 const LOCAL_FORWARDING_PORT = 19876;
 const SSH_MASTER_CONTROL_PATH = `/tmp/ssh_mux_%h_%p_%r`;

@@ -1,20 +1,21 @@
 import * as log from "jsr:@std/log";
 import { PortWatcher } from "./lib/port_watcher.ts";
 
-log.setup({
-  handlers: {
-    console: new log.ConsoleHandler("DEBUG"),
-  },
-  loggers: {
-    default: {
-      level: "INFO",
-      handlers: ["console"],
-    },
-  },
-});
 import { DockerDetector } from "./lib/docker_detector.ts";
 import { Forwarder } from "./lib/socat.ts";
 import { addSshForwarding, deleteSshForwarding } from "./lib/ssh_forwarding.ts";
+
+log.setup({
+	handlers: {
+		console: new log.ConsoleHandler("DEBUG"),
+	},
+	loggers: {
+		default: {
+			level: "INFO",
+			handlers: ["console"],
+		},
+	},
+});
 
 // dockerServerCode is defined in the combined bundle from main.ts
 declare const dockerServerCode: string;

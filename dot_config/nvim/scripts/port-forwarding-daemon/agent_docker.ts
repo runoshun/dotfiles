@@ -4,17 +4,16 @@ import { Forwarder } from "./lib/socat.ts";
 import { addSshForwarding, deleteSshForwarding } from "./lib/ssh_forwarding.ts";
 
 log.setup({
-  handlers: {
-    console: new log.ConsoleHandler("DEBUG"),
-  },
-  loggers: {
-    default: {
-      level: "INFO",
-      handlers: ["console"],
-    },
-  },
+	handlers: {
+		console: new log.ConsoleHandler("DEBUG"),
+	},
+	loggers: {
+		default: {
+			level: "INFO",
+			handlers: ["console"],
+		},
+	},
 });
-deleteSshForwarding;
 
 if (Deno.args.length !== 1) {
 	console.error("Usage: deno run docker_server.ts <forward-url>");
