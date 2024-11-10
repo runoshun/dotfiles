@@ -1,6 +1,7 @@
 /**
  * Simple socat-like functionality for TCP and Unix domain sockets
  */
+import * as log from "jsr:@std/log";
 
 export interface ForwardingOptions {
 	sourceType: "tcp" | "unix";
@@ -102,7 +103,7 @@ export class Forwarder {
 				});
 			}
 		} catch (error) {
-			console.error("Failed to connect to target:", error);
+			log.error("Failed to connect to target:", error);
 			sourceConn.close();
 			return;
 		}
@@ -118,10 +119,10 @@ export class Forwarder {
 		conn2: Deno.Conn,
 	): Promise<void> {
 		const pipe1 = this.pipe(conn1, conn2).catch((error) =>
-			console.error("Pipe 1->2 error:", error),
+			log.error("Pipe 1->2 error:", error),
 		);
 		const pipe2 = this.pipe(conn2, conn1).catch((error) =>
-			console.error("Pipe 2->1 error:", error),
+			log.error("Pipe 2->1 error:", error),
 		);
 
 		try {
