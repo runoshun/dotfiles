@@ -17,6 +17,7 @@ class SSHForwardingManager {
 	startForwarding(request: ForwardingRequest): void {
 		const remoteHost = request.remoteHost ?? "localhost";
 		const key = `${request.localPort}:${remoteHost}:${request.remotePort}`;
+		log.debug(`Starting SSH forwarding: ${key}`);
 
 		// すでに同じ転送が存在する場合は何もしない
 		if (this.processes.has(key)) {

@@ -87,6 +87,7 @@ export class Forwarder {
 	}
 
 	private async handleConnection(sourceConn: Deno.Conn) {
+		log.debug(`New connection from ${(sourceConn.remoteAddr as Deno.NetAddr).hostname}:${(sourceConn.remoteAddr as Deno.NetAddr).port}`);
 		let targetConn: Deno.Conn;
 
 		try {
