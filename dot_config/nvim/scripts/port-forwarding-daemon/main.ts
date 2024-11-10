@@ -36,16 +36,28 @@ const remoteServerProcess = new Deno.Command("ssh", {
 	stdin: "piped",
 }).spawn();
 
-// Bundle remote server code
+// Bundle server codes
 const bundler = new Bundler();
-const bundledCode = await bundler.bundle(
+const remoteServerCode = await bundler.bundle(
 	import.meta.resolve("./remote_server.ts"),
 );
+const dockerServerCode = await bundler.bundle(
+	import.meta.resolve("./docker_server.ts"),
+);
 
-// Send the bundled code to remote server
+// Combine both server codes with a separator
+const combinedCode = `
+// Docker server code
+const dockerServerCode = ${JSON.stringify(dockerServerCode)};
+
+// Remote server code
+${remoteServerCode}
+`;
+
+// Send the combined code to remote server
 if (remoteServerProcess.stdin) {
 	const writer = remoteServerProcess.stdin.getWriter();
-	await writer.write(new TextEncoder().encode(bundledCode));
+	await writer.write(new TextEncoder().encode(combinedCode));
 	await writer.close();
 }
 

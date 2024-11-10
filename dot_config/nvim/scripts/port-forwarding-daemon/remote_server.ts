@@ -10,11 +10,7 @@ if (Deno.args.length !== 1) {
 const forwardUrl = Deno.args[0];
 const DOCKER_LABEL = "port.forwarding.enabled";
 
-// Bundle docker_server.ts for injection
-const bundler = new Bundler();
-const dockerServerCode = await bundler.bundle(
-	import.meta.resolve("./docker_server.ts"),
-);
+// dockerServerCode is defined in the combined bundle from main.ts
 
 // Function to inject and run docker_server in a container
 async function injectAndRunServer(containerId: string) {
