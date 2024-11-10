@@ -48,7 +48,7 @@ class SSHForwardingManager {
 	stopAll(): void {
 		for (const [key, process] of this.processes) {
 			process.kill("SIGTERM");
-			console.log(`Stopped forwarding for ${key}`);
+			log.info(`Stopped forwarding for ${key}`);
 		}
 		this.processes.clear();
 	}
@@ -79,7 +79,7 @@ export class SSHForwardingServer {
 					this.manager.startForwarding(body);
 					return new Response("Forwarding started", { status: 200 });
 				} catch (error) {
-					console.error("Error processing request:", error);
+					log.error("Error processing request:", error);
 					return new Response("Invalid request", { status: 400 });
 				}
 			} else if (request.method === "DELETE") {
@@ -116,7 +116,7 @@ export async function addSshForwarding(
 			body: JSON.stringify(request),
 		});
 	} catch (error) {
-		console.error("Failed to send forwarding request:", error);
+		log.error("Failed to send forwarding request:", error);
 	}
 }
 
@@ -135,6 +135,6 @@ export async function deleteSshForwarding(
 			},
 		);
 	} catch (error) {
-		console.error("Failed to send stop forwarding request:", error);
+		log.error("Failed to send stop forwarding request:", error);
 	}
 }

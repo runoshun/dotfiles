@@ -1,6 +1,19 @@
+import * as log from "jsr:@std/log";
 import { PortWatcher } from "./lib/port_watcher.ts";
 import { Forwarder } from "./lib/socat.ts";
 import { addSshForwarding, deleteSshForwarding } from "./lib/ssh_forwarding.ts";
+
+log.setup({
+  handlers: {
+    console: new log.ConsoleHandler("DEBUG"),
+  },
+  loggers: {
+    default: {
+      level: "INFO",
+      handlers: ["console"],
+    },
+  },
+});
 deleteSshForwarding;
 
 if (Deno.args.length !== 1) {
@@ -19,7 +32,7 @@ const containerIp = (() => {
 // Watch for new ports
 const watcher = new PortWatcher(
 	async (port: number) => {
-		console.log(`New container port detected: ${port}`);
+		log.info(`New container port detected: ${port}`);
 
 		const randomPort = Math.floor(Math.random() * 10000) + 20000;
 		try {
@@ -43,11 +56,11 @@ const watcher = new PortWatcher(
 				remotePort: randomPort,
 			});
 		} catch (error) {
-			console.error("Failed to setup port forwarding:", error);
+			log.error("Failed to setup port forwarding:", error);
 		}
 	},
 	async (port: number) => {
-		console.log(`Container port closed: ${port}`);
+		log.info(`Container port closed: ${port}`);
 		try {
 			// Stop the forwarder
 			const forwarder = forwarders.get(port);
@@ -59,13 +72,13 @@ const watcher = new PortWatcher(
 			// Notify the management server
 			await deleteSshForwarding(forwardUrl, port, containerIp);
 		} catch (error) {
-			console.error("Failed to stop port forwarding:", error);
+			log.error("Failed to stop port forwarding:", error);
 		}
 	},
 	20000,
 );
 
-console.log(`Docker port watcher started, forward server: ${forwardUrl}`);
+log.info(`Docker port watcher started, forward server: ${forwardUrl}`);
 watcher.start();
 
 // Cleanup on exit

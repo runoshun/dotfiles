@@ -80,7 +80,7 @@ export class Forwarder {
 			}
 		} catch (error) {
 			if (!(error instanceof Deno.errors.BadResource)) {
-				console.error("Accept error:", error);
+				log.error("Accept error:", error);
 			}
 		}
 	}

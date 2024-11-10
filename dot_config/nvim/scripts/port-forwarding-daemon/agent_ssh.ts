@@ -1,4 +1,17 @@
+import * as log from "jsr:@std/log";
 import { PortWatcher } from "./lib/port_watcher.ts";
+
+log.setup({
+  handlers: {
+    console: new log.ConsoleHandler("DEBUG"),
+  },
+  loggers: {
+    default: {
+      level: "INFO",
+      handlers: ["console"],
+    },
+  },
+});
 import { DockerDetector } from "./lib/docker_detector.ts";
 import { Forwarder } from "./lib/socat.ts";
 import { addSshForwarding, deleteSshForwarding } from "./lib/ssh_forwarding.ts";
@@ -55,11 +68,11 @@ async function injectAndRunServerOnContainer(containerId: string) {
 		}).spawn();
 
 		await runCmd.status;
-		console.log(`Started server in container ${await runCmd.status}`);
+		log.info(`Started server in container ${await runCmd.status}`);
 
-		console.log(`Started port forwarding server in container ${containerId}`);
+		log.info(`Started port forwarding server in container ${containerId}`);
 	} catch (error) {
-		console.error(`Failed to setup container ${containerId}:`, error);
+		log.error(`Failed to setup container ${containerId}:`, error);
 	}
 }
 
@@ -67,11 +80,11 @@ async function injectAndRunServerOnContainer(containerId: string) {
 const dockerDetector = new DockerDetector(
 	DOCKER_LABEL,
 	(container) => {
-		console.log(`New container detected: ${container.name}`);
+		log.info(`New container detected: ${container.name}`);
 		injectAndRunServerOnContainer(container.id);
 	},
 	(container) => {
-		console.log(`Container stopped: ${container.name}`);
+		log.info(`Container stopped: ${container.name}`);
 	},
 );
 const dockerForwarder = new Forwarder({
@@ -86,7 +99,7 @@ const dockerForwarder = new Forwarder({
 // Watch for new ports on the remote server
 const watcher = new PortWatcher(
 	async (port: number) => {
-		console.log(`New port detected: ${port}`);
+		log.info(`New port detected: ${port}`);
 
 		try {
 			await addSshForwarding(managerServerUrl, {
@@ -95,20 +108,20 @@ const watcher = new PortWatcher(
 				remotePort: port,
 			});
 		} catch (error) {
-			console.error("Failed to send forwarding request:", error);
+			log.error("Failed to send forwarding request:", error);
 		}
 	},
 	async (port: number) => {
-		console.log(`Port closed: ${port}`);
+		log.info(`Port closed: ${port}`);
 		try {
 			await deleteSshForwarding(managerServerUrl, port);
 		} catch (error) {
-			console.error("Failed to send stop forwarding request:", error);
+			log.error("Failed to send stop forwarding request:", error);
 		}
 	},
 );
 
-console.log(
+log.info(
 	`Port and docker container watcher started on remote, forward server: ${managerServerUrl}`,
 );
 dockerForwarder.start();
