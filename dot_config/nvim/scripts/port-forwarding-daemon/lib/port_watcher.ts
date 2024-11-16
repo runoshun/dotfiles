@@ -1,5 +1,3 @@
-import * as log from "jsr:@std/log";
-
 export interface TcpEntry {
 	localAddress: string;
 	localPort: number;
@@ -60,7 +58,6 @@ export class PortWatcher {
 	 */
 	private async checkPorts(initial: boolean = false) {
 		const entries = await this.readTcpTable();
-		log.debug(`Found ${entries.length} TCP entries, filtering for uid ${this.uid}`);
 
 		// TCP_LISTEN state is 0x0A
 		const listeningPorts = new Set(

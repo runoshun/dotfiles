@@ -9,7 +9,6 @@ export class Bundler {
 	 * Bundle the source files starting from an entry point
 	 */
 	async bundle(entryPoint: string): Promise<string> {
-		log.debug(`Bundling TypeScript from entry point: ${entryPoint}`);
 		try {
 			const result = await bundle(entryPoint, {
 				allowRemote: true,

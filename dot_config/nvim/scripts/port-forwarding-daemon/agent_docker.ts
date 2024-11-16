@@ -1,31 +1,49 @@
-import * as log from "jsr:@std/log";
+import * as fs from "jsr:@std/fs";
+import { parseArgs } from "jsr:@std/cli";
 import { PortWatcher } from "./lib/port_watcher.ts";
 import { Forwarder } from "./lib/socat.ts";
 import { addSshForwarding, deleteSshForwarding } from "./lib/ssh_forwarding.ts";
+import * as log from "./lib/logging.ts";
 
-log.setup({
-	handlers: {
-		console: new log.ConsoleHandler("DEBUG"),
-	},
-	loggers: {
-		default: {
-			level: "INFO",
-			handlers: ["console"],
-		},
+log.init("AGENT_DOCKER");
+
+const args = parseArgs(Deno.args, {
+	string: ["forward-url", "pid-file"],
+	default: {
+		"pid-file": "/tmp/agent_docker.pid",
 	},
 });
 
-if (Deno.args.length !== 1) {
-	console.error("Usage: deno run docker_server.ts <forward-url>");
-	Deno.exit(1);
+const pidFile = args["pid-file"];
+
+if (fs.existsSync(pidFile)) {
+	const pid = parseInt(Deno.readTextFileSync(pidFile));
+	log.info(`Killing previous process: ${pid}`);
+	Deno.kill(pid, "SIGKILL");
 }
 
-const forwardUrl = Deno.args[0];
-const forwarders = new Map<number, Forwarder>();
+if (!args["forward-url"]) {
+	log.debug("Forward URL is not provided, exiting...");
+	Deno.exit(0);
+}
+
+const forwardUrl = args["forward-url"];
+const forwarders = new Map<
+	number,
+	{
+		forwarder: Forwarder;
+		sourcePort: number;
+	}
+>();
 
 const containerIp = (() => {
 	const p = new Deno.Command("hostname", { args: ["-i"] }).outputSync();
 	return new TextDecoder().decode(p.stdout).trim();
+})();
+
+const containerId = (() => {
+	const p = Deno.readTextFileSync("/proc/1/cpuset").split("/")[1];
+	return p.substring(0, 12);
 })();
 
 // Watch for new ports
@@ -33,26 +51,27 @@ const watcher = new PortWatcher(
 	async (port: number) => {
 		log.info(`New container port detected: ${port}`);
 
-		const randomPort = Math.floor(Math.random() * 10000) + 20000;
+		const sourcePort = Math.floor(Math.random() * 10000) + 20000;
 		try {
 			// Create a new forwarder for this port
 			const forwarder = new Forwarder({
 				sourceType: "tcp",
 				sourceAddress: containerIp,
-				sourcePort: randomPort,
+				sourcePort: sourcePort,
 				targetType: "tcp",
 				targetAddress: "localhost",
 				targetPort: port,
 			});
 
 			forwarder.start();
-			forwarders.set(port, forwarder);
+			forwarders.set(port, { forwarder, sourcePort });
 
 			// Notify to the management server
 			await addSshForwarding(forwardUrl, {
 				localPort: port,
 				remoteHost: containerIp,
-				remotePort: randomPort,
+				remotePort: sourcePort,
+				tag: containerId,
 			});
 		} catch (error) {
 			log.error("Failed to setup port forwarding:", error);
@@ -62,14 +81,17 @@ const watcher = new PortWatcher(
 		log.info(`Container port closed: ${port}`);
 		try {
 			// Stop the forwarder
-			const forwarder = forwarders.get(port);
-			if (forwarder) {
-				await forwarder.stop();
+			const entry = forwarders.get(port);
+			if (entry) {
+				await entry.forwarder.stop();
 				forwarders.delete(port);
-			}
 
-			// Notify the management server
-			await deleteSshForwarding(forwardUrl, port, containerIp);
+				// Notify the management server
+				await deleteSshForwarding(forwardUrl, {
+					remotePort: entry.sourcePort,
+					remoteHost: containerIp,
+				});
+			}
 		} catch (error) {
 			log.error("Failed to stop port forwarding:", error);
 		}
@@ -79,12 +101,13 @@ const watcher = new PortWatcher(
 
 log.info(`Docker port watcher started, forward server: ${forwardUrl}`);
 watcher.start();
+Deno.writeTextFileSync(pidFile, Deno.pid.toString());
 
 // Cleanup on exit
 const cleanup = async () => {
 	watcher.stop();
-	for (const forwarder of forwarders.values()) {
-		await forwarder.stop();
+	for (const entry of forwarders.values()) {
+		await entry.forwarder.stop();
 	}
 	Deno.exit(0);
 };

@@ -57,7 +57,6 @@ export class DockerDetector {
 	private async checkContainers() {
 		const currentContainers = await this.getContainers();
 		const currentIds = new Set(currentContainers.map((c) => c.id));
-		log.debug(`Found ${currentContainers.length} containers matching label ${this.labelSelector}`);
 
 		// Check for new containers
 		for (const container of currentContainers) {

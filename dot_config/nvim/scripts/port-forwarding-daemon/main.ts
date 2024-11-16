@@ -1,25 +1,9 @@
-import * as log from "jsr:@std/log";
-
 import { SSHForwardingServer } from "./lib/ssh_forwarding.ts";
 import { Bundler } from "./lib/bundler.ts";
+import * as log from "./lib/logging.ts";
+import * as settings from "./lib/settings.ts";
 
-log.setup({
-	handlers: {
-		default: new log.ConsoleHandler("DEBUG", {
-			formatter: log.formatters.jsonFormatter,
-			useColors: false,
-		}),
-	},
-	loggers: {
-		default: {
-			level: "INFO",
-			handlers: ["default"],
-		},
-	},
-});
-
-const LOCAL_FORWARDING_PORT = 19876;
-const SSH_MASTER_CONTROL_PATH = `/tmp/ssh_mux_%h_%p_%r`;
+log.init("MAIN");
 
 if (Deno.args.length !== 1) {
 	console.error("Usage: deno run main.ts <remote-host>");
@@ -27,31 +11,6 @@ if (Deno.args.length !== 1) {
 }
 
 const remoteHost = Deno.args[0];
-
-// Start local SSH forwarding server
-const forwardingServer = new SSHForwardingServer({
-	serverPort: LOCAL_FORWARDING_PORT,
-	controlPath: SSH_MASTER_CONTROL_PATH,
-	remoteHost: remoteHost,
-});
-forwardingServer.start();
-
-// Establish SSH connection and Start remote port watcher server
-const remoteServerProcess = new Deno.Command("ssh", {
-	args: [
-		remoteHost,
-		"-o",
-		"ControlMaster=auto",
-		"-o",
-		"ControlPersist=10s",
-		"-o",
-		`ControlPath=${SSH_MASTER_CONTROL_PATH}`,
-		"-R",
-		`${LOCAL_FORWARDING_PORT}:localhost:${LOCAL_FORWARDING_PORT}`,
-		`cat > /tmp/portfowarding.ts && ~/.local/share/mise/shims/deno run -A /tmp/portfowarding.ts 'http://localhost:${LOCAL_FORWARDING_PORT}'`,
-	],
-	stdin: "piped",
-}).spawn();
 
 // Bundle server codes
 const bundler = new Bundler();
@@ -71,18 +30,44 @@ const dockerServerCode = ${JSON.stringify(dockerServerCode)};
 ${remoteServerCode}
 `;
 
-// Send the combined code to remote server
-if (remoteServerProcess.stdin) {
-	const writer = remoteServerProcess.stdin.getWriter();
-	await writer.write(new TextEncoder().encode(combinedCode));
-	await writer.close();
-}
+// Start local SSH forwarding server
+const sshForwardingManagerServer = new SSHForwardingServer({
+	serverPort: settings.SSH_FORWARDING_MANAGER_PORT,
+	controlPath: settings.SSH_MASTER_CONTROL_PATH,
+	remoteHost: remoteHost,
+});
+sshForwardingManagerServer.start();
 
-// Cleanup on exit
-const cleanup = () => {
-	forwardingServer.stop();
-	remoteServerProcess.kill("SIGTERM");
-	Deno.exit();
+// Establish SSH connection and Start remote port watcher server
+Deno.writeTextFileSync(settings.SSH_AGENT_SCRIPT_PATH, combinedCode);
+const scpProcess = new Deno.Command("scp", {
+	args: [
+		settings.SSH_AGENT_SCRIPT_PATH,
+		`${remoteHost}:${settings.SSH_AGENT_SCRIPT_PATH}`,
+	],
+	stdout: "null",
+}).spawn();
+await scpProcess.status;
+
+const sshAgentProcess = new Deno.Command("ssh", {
+	args: [
+		"-tt",
+		"-o",
+		"ControlMaster=yes",
+		"-o",
+		`ControlPath=${sshForwardingManagerServer.sshControlPath}`,
+		"-R",
+		`${sshForwardingManagerServer.port}:localhost:${sshForwardingManagerServer.port}`,
+		remoteHost,
+		`~/.local/share/mise/shims/deno run -A ${settings.SSH_AGENT_SCRIPT_PATH} 'http://localhost:${sshForwardingManagerServer.port}'`,
+	],
+	stdin: "null",
+}).spawn();
+
+const cleanup = async () => {
+	await sshForwardingManagerServer.stop();
+	sshAgentProcess.kill("SIGTERM");
+	Deno.exit(0);
 };
 
 Deno.addSignalListener("SIGINT", cleanup);

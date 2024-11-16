@@ -1,21 +1,10 @@
-import * as log from "jsr:@std/log";
 import { PortWatcher } from "./lib/port_watcher.ts";
 
-import { DockerDetector } from "./lib/docker_detector.ts";
-import { Forwarder } from "./lib/socat.ts";
+import * as log from "./lib/logging.ts";
 import { addSshForwarding, deleteSshForwarding } from "./lib/ssh_forwarding.ts";
+import { DockerAgentManager } from "./lib/docker_agent_manager.ts";
 
-log.setup({
-	handlers: {
-		console: new log.ConsoleHandler("DEBUG"),
-	},
-	loggers: {
-		default: {
-			level: "INFO",
-			handlers: ["console"],
-		},
-	},
-});
+log.init("AGENT_SSH");
 
 // dockerServerCode is defined in the combined bundle from main.ts
 declare const dockerServerCode: string;
@@ -26,76 +15,6 @@ if (Deno.args.length !== 1) {
 }
 
 const managerServerUrl = Deno.args[0];
-const managerServerPort = new URL(managerServerUrl).port;
-
-const DOCKER_LABEL = "auto.port.forwarding.enabled";
-const DOCKER_SCRIPT_PATH = "/tmp/docker_server.ts";
-const DOCKER_MANAGER_SERVER_PORT = parseInt(managerServerPort) + 1;
-
-Deno.writeTextFileSync(DOCKER_SCRIPT_PATH, dockerServerCode);
-
-// Function to inject and run docker_server in a container
-async function injectAndRunServerOnContainer(containerId: string) {
-	try {
-		// Copy server code to container
-		const copyCmd = new Deno.Command("docker", {
-			args: ["cp", DOCKER_SCRIPT_PATH, `${containerId}:${DOCKER_SCRIPT_PATH}`],
-		}).spawn();
-		await copyCmd.status;
-
-		// Install Deno in container
-		const installCmd = new Deno.Command("docker", {
-			args: [
-				"exec",
-				containerId,
-				"sh",
-				"-c",
-				"curl -fsSL https://deno.land/install.sh | sh",
-			],
-		}).spawn();
-		await installCmd.status;
-
-		// Run server in container
-		const runCmd = new Deno.Command("docker", {
-			args: [
-				"exec",
-				containerId,
-				"/root/.deno/bin/deno",
-				"run",
-				"-A",
-				DOCKER_SCRIPT_PATH,
-				`http://host.docker.internal:${DOCKER_MANAGER_SERVER_PORT}`,
-			],
-		}).spawn();
-
-		await runCmd.status;
-		log.info(`Started server in container ${await runCmd.status}`);
-
-		log.info(`Started port forwarding server in container ${containerId}`);
-	} catch (error) {
-		log.error(`Failed to setup container ${containerId}:`, error);
-	}
-}
-
-// Setup Docker container monitoring
-const dockerDetector = new DockerDetector(
-	DOCKER_LABEL,
-	(container) => {
-		log.info(`New container detected: ${container.name}`);
-		injectAndRunServerOnContainer(container.id);
-	},
-	(container) => {
-		log.info(`Container stopped: ${container.name}`);
-	},
-);
-const dockerForwarder = new Forwarder({
-	sourceType: "tcp",
-	sourcePort: DOCKER_MANAGER_SERVER_PORT,
-	sourceAddress: "0.0.0.0",
-	targetType: "tcp",
-	targetPort: parseInt(managerServerPort),
-	targetAddress: "localhost",
-});
 
 // Watch for new ports on the remote server
 const watcher = new PortWatcher(
@@ -115,29 +34,31 @@ const watcher = new PortWatcher(
 	async (port: number) => {
 		log.info(`Port closed: ${port}`);
 		try {
-			await deleteSshForwarding(managerServerUrl, port);
+			await deleteSshForwarding(managerServerUrl, {
+				remotePort: port,
+			});
 		} catch (error) {
 			log.error("Failed to send stop forwarding request:", error);
 		}
 	},
 );
 
-log.info(
-	`Port and docker container watcher started on remote, forward server: ${managerServerUrl}`,
+const dockerAgentManager = new DockerAgentManager(
+	dockerServerCode,
+	managerServerUrl,
 );
-dockerForwarder.start();
-dockerDetector.start();
+
 watcher.start();
+dockerAgentManager.start();
+log.info(`SSH agent started on remote, manager server: ${managerServerUrl}`);
 
 // Cleanup on exit
-const cleanup = () => {
+const cleanup = async () => {
 	watcher.stop();
-	dockerDetector.stop();
+	await dockerAgentManager.stopAll();
+	log.info("Cleanup agent_ssh done, exiting...");
 	Deno.exit(0);
 };
 
 Deno.addSignalListener("SIGINT", cleanup);
 Deno.addSignalListener("SIGTERM", cleanup);
-
-// Keep the process running
-await new Promise(() => {});

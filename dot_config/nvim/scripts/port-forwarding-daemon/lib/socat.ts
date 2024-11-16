@@ -1,7 +1,7 @@
 /**
  * Simple socat-like functionality for TCP and Unix domain sockets
  */
-import * as log from "jsr:@std/log";
+import * as log from "./logging.ts";
 
 export interface ForwardingOptions {
 	sourceType: "tcp" | "unix";
@@ -18,11 +18,16 @@ export class Forwarder {
 
 	constructor(private options: ForwardingOptions) {}
 
+	forwardingInfo() {
+		return `${this.options.sourceType}://${this.options.sourceAddress}:${this.options.sourcePort} -> ${this.options.targetType}://${this.options.targetAddress}:${this.options.targetPort} on ${Deno.hostname()}`;
+	}
+
 	/**
 	 * Start forwarding
 	 */
 	start() {
 		if (this.server) return;
+		log.debug("[Forwarder] Starting " + this.forwardingInfo());
 
 		// Cleanup existing Unix socket file if needed
 		if (this.options.sourceType === "unix") {
@@ -48,6 +53,7 @@ export class Forwarder {
 
 		// Accept connections
 		this.acceptConnections();
+		log.debug("[Forwarder] Started " + this.forwardingInfo());
 	}
 
 	/**
@@ -56,6 +62,7 @@ export class Forwarder {
 	async stop() {
 		if (!this.server) return;
 
+		log.debug("[Forwarder] Stopping " + this.forwardingInfo());
 		this.server.close();
 		this.server = null;
 
@@ -70,6 +77,7 @@ export class Forwarder {
 				// Ignore cleanup errors
 			}
 		}
+		log.debug("[Forwarder] Stopped " + this.forwardingInfo());
 	}
 
 	private async acceptConnections() {
@@ -87,14 +95,23 @@ export class Forwarder {
 	}
 
 	private async handleConnection(sourceConn: Deno.Conn) {
-		log.debug(`New connection from ${(sourceConn.remoteAddr as Deno.NetAddr).hostname}:${(sourceConn.remoteAddr as Deno.NetAddr).port}`);
+		log.debug(
+			`[Forwarder]New connection from ${
+				(sourceConn.remoteAddr as Deno.NetAddr).hostname
+			}:${(sourceConn.remoteAddr as Deno.NetAddr).port} ` +
+				this.forwardingInfo(),
+		);
 		let targetConn: Deno.Conn;
 
 		try {
 			// Connect to target
 			if (this.options.targetType === "tcp") {
+				const hostname =
+					this.options.targetAddress === "localhost"
+						? "127.0.0.1"
+						: this.options.targetAddress;
 				targetConn = await Deno.connect({
-					hostname: this.options.targetAddress,
+					hostname: hostname,
 					port: this.options.targetPort!,
 				});
 			} else {

@@ -1,20 +1,33 @@
-import * as log from "jsr:@std/log";
+import * as log from "./logging.ts";
 
 interface ForwardingRequest {
 	localPort: number;
 	remoteHost?: string;
 	remotePort: number;
+	tag?: string;
 }
 
 class SSHForwardingManager {
-	private processes: Map<string, Deno.ChildProcess> = new Map();
+	private processes: Map<string, { tag?: string }> = new Map();
 
 	constructor(
 		private remoteHost: string,
 		private controlPath: string,
 	) {}
 
-	startForwarding(request: ForwardingRequest): void {
+	private runSSH(args: string[]) {
+		const sshArgs = [
+			"-o",
+			`ControlPath=${this.controlPath}`,
+			...args,
+			this.remoteHost,
+		];
+		log.debug(`Running SSH: ssh ${sshArgs.join(" ")}`);
+		const cmd = new Deno.Command("ssh", { args: sshArgs }).spawn();
+		return cmd.status;
+	}
+
+	async startForwarding(request: ForwardingRequest) {
 		const remoteHost = request.remoteHost ?? "localhost";
 		const key = `${request.localPort}:${remoteHost}:${request.remotePort}`;
 		log.debug(`Starting SSH forwarding: ${key}`);
@@ -23,43 +36,51 @@ class SSHForwardingManager {
 		if (this.processes.has(key)) {
 			return;
 		}
-		const args = [
-			"-o",
-			`ControlPath=${this.controlPath}`,
-			"-NL",
-			`${request.localPort}:${remoteHost}:${request.remotePort}`,
-			this.remoteHost,
-		];
-		const sshProcess = new Deno.Command("ssh", { args: args }).spawn();
+		const status = await this.runSSH(["-O", "forward", "-L", key]);
+		if (!status.success) {
+			log.error(`Failed to start SSH forwarding: ${key}`);
+			return;
+		}
 
-		this.processes.set(key, sshProcess);
-		sshProcess.status.then((_status) => {
-			this.processes.delete(key);
-		});
+		this.processes.set(key, { tag: request.tag });
+		log.debug(`Current forwardings: ${Array.from(this.processes.keys())}`);
 	}
 
-	stopForwarding(remotePort: number, remoteHost?: string): void {
-		const pat = `${remoteHost ?? "localhost"}:${remotePort}`;
-		for (const [key, process] of this.processes) {
-			if (key.endsWith(pat)) {
-				process.kill("SIGTERM");
-				this.processes.delete(key);
+	async stopForwarding(pat: RegExp) {
+		for (const [key, _] of this.processes) {
+			if (key.match(pat)) {
+				log.info(`Stopping SSH forwarding: ${key}`);
+				const status = await this.runSSH(["-O", "cancel", "-L", key]);
+				if (!status.success) {
+					log.error(`Failed to stop SSH forwarding: ${key}`);
+				} else {
+					this.processes.delete(key);
+				}
+			}
+		}
+		log.debug(`Current forwardings: ${Array.from(this.processes.keys())}`);
+	}
+
+	async stopForwardingByTag(tag: string) {
+		for (const [key, { tag: t }] of this.processes) {
+			if (t === tag) {
+				await this.stopForwarding(new RegExp(key));
 			}
 		}
 	}
 
-	stopAll(): void {
-		for (const [key, process] of this.processes) {
-			process.kill("SIGTERM");
-			log.info(`Stopped forwarding for ${key}`);
+	async stopAll() {
+		log.debug(`Stopping all SSH forwarding`);
+		for (const key of this.processes.keys()) {
+			await this.stopForwarding(new RegExp(key));
 		}
-		this.processes.clear();
 	}
 }
 
 export class SSHForwardingServer {
 	private manager: SSHForwardingManager;
-	private serverPort: number;
+	public readonly port: number;
+	public readonly sshControlPath: string;
 
 	constructor({
 		remoteHost,
@@ -70,12 +91,13 @@ export class SSHForwardingServer {
 		controlPath: string;
 		serverPort: number;
 	}) {
+		this.sshControlPath = controlPath;
 		this.manager = new SSHForwardingManager(remoteHost, controlPath);
-		this.serverPort = serverPort;
+		this.port = serverPort;
 	}
 
 	start() {
-		Deno.serve({ port: this.serverPort }, async (request) => {
+		Deno.serve({ port: this.port }, async (request) => {
 			if (request.method === "POST") {
 				try {
 					const body: ForwardingRequest = await request.json();
@@ -88,10 +110,26 @@ export class SSHForwardingServer {
 			} else if (request.method === "DELETE") {
 				const url = new URL(request.url);
 				const remotePort = url.searchParams.get("remotePort");
-				const remoteHost = url.searchParams.get("remoteHost") ?? "localhost";
+				const remoteHost = url.searchParams.get("remoteHost");
+				const tag = url.searchParams.get("tag");
 
-				if (remotePort) {
-					this.manager.stopForwarding(parseInt(remotePort), remoteHost);
+				if (remotePort && remoteHost) {
+					await this.manager.stopForwarding(
+						new RegExp(`:${remoteHost}:${remotePort}$`),
+					);
+					return new Response("Forwarding stopped", { status: 200 });
+				} else if (remotePort) {
+					await this.manager.stopForwarding(
+						new RegExp(`localhost:${remotePort}$`),
+					);
+					return new Response("Forwarding stopped", { status: 200 });
+				} else if (remoteHost) {
+					await this.manager.stopForwarding(new RegExp(`:${remoteHost}:`));
+					return new Response("Forwarding stopped", { status: 200 });
+				}
+
+				if (tag) {
+					await this.manager.stopForwardingByTag(tag);
 					return new Response("Forwarding stopped", { status: 200 });
 				}
 				return new Response("Invalid request", { status: 400 });
@@ -102,7 +140,7 @@ export class SSHForwardingServer {
 	}
 
 	stop() {
-		this.manager.stopAll();
+		return this.manager.stopAll();
 	}
 }
 
@@ -125,18 +163,27 @@ export async function addSshForwarding(
 
 export async function deleteSshForwarding(
 	serverUrl: string,
-	remotePort: number,
-	remoteHost?: string,
+	target: {
+		remotePort?: number;
+		remoteHost?: string;
+		tag?: string;
+	},
 ) {
 	try {
-		await fetch(
-			`${serverUrl}?remotePort=${remotePort}&remoteHost=${
-				remoteHost ?? "localhost"
-			}`,
-			{
-				method: "DELETE",
-			},
-		);
+		const { remotePort, remoteHost } = target;
+		const query = new URLSearchParams();
+		if (remotePort) {
+			query.set("remotePort", remotePort.toString());
+		}
+		if (remoteHost) {
+			query.set("remoteHost", remoteHost);
+		}
+		if (target.tag) {
+			query.set("tag", target.tag);
+		}
+		await fetch(`${serverUrl}?${query.toString()}`, {
+			method: "DELETE",
+		});
 	} catch (error) {
 		log.error("Failed to send stop forwarding request:", error);
 	}
