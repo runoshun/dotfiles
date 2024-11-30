@@ -26,6 +26,6 @@
 return {
 	{
 		"gbprod/yanky.nvim",
-		enable = false,
+		enabled = false,
 	},
 }
