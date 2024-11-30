@@ -9,6 +9,7 @@ fi
 # User specific aliases and functions
 alias python=python3
 alias cg="cd \$(git rev-parse --show-toplevel)"
+alias cat="bat"
 
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
@@ -109,6 +110,9 @@ fi
 alias awsume=". awsume"
 alias mr='mise r'
 alias mx='mise x'
+
+alias mm='memo n'
+alias mf='memo e'
 
 if command -v aws_completer &>/dev/null; then
     complete -C "$(which aws_completer)" aws
