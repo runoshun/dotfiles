@@ -112,7 +112,7 @@ alias mr='mise r'
 alias mx='mise x'
 
 alias mm='memo n'
-alias mf='memo e'
+alias mf='memo b'
 
 if command -v aws_completer &>/dev/null; then
     complete -C "$(which aws_completer)" aws

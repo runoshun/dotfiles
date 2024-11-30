@@ -1,3 +1,5 @@
+local memo_dir = vim.fn.expand("~/.config/memo/_posts")
+
 return {
 	{
 		"glidenote/memolist.vim",
@@ -8,15 +10,15 @@ return {
 			{ "<leader>mw", "<cmd>Telescope memo live_grep<cr>", desc = "Grep memos" },
 			{ "<leader>mP", "<cmd>!memo push<cr>", desc = "Push memos to Git" },
 			{ "<leader>mp", "<cmd>!memo pull<cr>", desc = "Pull memos from Git" },
+			{ "<leader>md", "<cmd>edit " .. memo_dir .. "/TODO.md" .. "<cr>", desc = "Open TODO memo" },
 		},
 		dependencies = {
 			"nvim-telescope/telescope.nvim",
 			"delphinus/telescope-memo.nvim",
 		},
 		config = function()
-			vim.g.memolist_path = "~/.config/memo/_posts"
+			vim.g.memolist_path = memo_dir
 			vim.g.memolist_memo_suffix = "md"
-			vim.g.memolist_fzf = 1
 
 			require("telescope").load_extension("memo")
 		end,
