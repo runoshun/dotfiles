@@ -5,4 +5,4 @@ if [ "x$1" = "x-usage" ]; then
   exit
 fi
 
-cd $MEMODIR && git pull origin master --rebase
+cd $MEMODIR && git pull origin main --rebase
