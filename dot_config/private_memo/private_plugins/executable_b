@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if [ "x$1" = "x-usage" ]; then
+  echo show memo with bat
+  exit
+fi
+
+memo v | bat -l md
