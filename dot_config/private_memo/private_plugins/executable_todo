@@ -1,0 +1,31 @@
+#!/bin/sh
+
+if [ "$1" = "-usage" ]; then
+  echo show todos in memo
+  exit
+fi
+
+# if -grep in arguments, use grep
+if [ "$*" = "${*-grep*}" ]; then
+  use_grep="true"
+fi
+
+# if -vim in arguments, use vim
+if [ "$*" = "${*-vim*}" ]; then
+  vim_mode="true"
+fi
+
+if [ "x$use_grep" != "xtrue" ] && command -v rg >/dev/null 2>&1; then
+  todos=$(cd "$MEMODIR" && rg "[-]\s*\[ \]\s*\w+" --field-match-separator " " --no-heading --line-number)
+else
+  todos=$(cd "$MEMODIR" && find . -type f -exec grep -H "[-]\s*\[ \]\s*\w" {} \; | sed 's/:/\t/')
+fi
+
+if [ "$vim_mode" = "true" ]; then
+  echo "$todos"
+else
+  echo "$todos" | fzf \
+    --preview "bat --color=always --style=grid,numbers --highlight-line {2} -l markdown ${MEMODIR}/{1}" \
+    --preview-window=right:50%:wrap |
+    cut -d: -f1 | xargs memo edit
+fi

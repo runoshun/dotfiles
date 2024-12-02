@@ -1,0 +1,24 @@
+#!/bin/bash
+
+if [ "$1" = -usage ]; then
+  echo "open today's daily memo"
+  exit
+fi
+
+title=dialy
+filename="$(date +%Y-%m-%d)-${title}.md"
+
+if [ "$1" = "-vim" ]; then
+  vim_mode=true
+fi
+
+# if memo does not exist, create it
+if [ ! -f "${MEMODIR}/${filename}" ]; then
+  echo "# $(date +%Y-%m-%d)'s memo" >"${MEMODIR}/${filename}"
+fi
+
+if [ "${vim_mode:-}" = true ]; then
+  echo "${MEMODIR}/${filename}"
+else
+  memo edit "${filename}"
+fi
