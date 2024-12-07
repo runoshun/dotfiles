@@ -111,7 +111,8 @@ alias awsume=". awsume"
 alias mr='mise r'
 alias mx='mise x'
 
-alias mm='memo n'
+alias mn='memo n'
+alias mm='memo today'
 alias mf='memo b'
 
 if command -v aws_completer &>/dev/null; then
