@@ -93,6 +93,7 @@ if command -v chezmoi &>/dev/null; then
     alias che="chezmoi edit"
     alias cha="chezmoi apply"
     alias chc="chezmoi cd"
+    alias chu="chezmoi update"
     alias chg="chezmoi git"
     chp() {
         chezmoi git diff
@@ -134,6 +135,10 @@ auto-dev-instance() {
 auto-marine-dev-instance() {
     aws-auto-profiles
     autossh -M 0 -N -f -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" marine-dev-instance-launch
+}
+
+portforwarding-daemon() {
+    deno run --A https://raw.githubusercontent.com/runoshun/port-forwarding-daemon/refs/heads/main/main.ts
 }
 
 portforward-dev() {
@@ -201,6 +206,6 @@ delete-default-vpcs() {
     done
 }
 
-eval "$(zoxide init bash)"
+eval "$(mise x zoxide -- zoxide init bash)"
 
 # vim: set ft=bash :
