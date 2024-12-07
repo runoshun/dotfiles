@@ -138,7 +138,11 @@ auto-marine-dev-instance() {
 }
 
 portforwarding-daemon() {
-    deno run --A https://raw.githubusercontent.com/runoshun/port-forwarding-daemon/refs/heads/main/main.ts
+    if [ $# -ne 1 ]; then
+        echo "usage: portforwarding-daemon <ssh-host>"
+        return 1
+    fi
+    deno run -A https://raw.githubusercontent.com/runoshun/port-forwarding-daemon/refs/heads/main/main.ts start $1
 }
 
 portforward-dev() {
