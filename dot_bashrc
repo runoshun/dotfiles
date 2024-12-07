@@ -201,4 +201,6 @@ delete-default-vpcs() {
     done
 }
 
+eval "$(zoxide init bash)"
+
 # vim: set ft=bash :
