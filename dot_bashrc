@@ -145,18 +145,6 @@ portforwarding-daemon() {
     deno run -A https://raw.githubusercontent.com/runoshun/port-forwarding-daemon/refs/heads/main/main.ts start $1
 }
 
-portforward-dev() {
-    autossh -M 0 -Nf -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" \
-        -L 8080:localhost:8080 \
-        -L 8089:localhost:8089 \
-        -L 8888:localhost:8888 \
-        -L 5173:localhost:5173 \
-        -L 8000:localhost:8000 \
-        -L 1080:localhost:1080 \
-        -L 8787:localhost:8787 \
-        "$1"
-}
-
 attach-dev-container() {
     res=$(npx @devcontainers/cli up --workspace-folder ./ --dotfiles-repository https://github.com/runoshun/dotfiles)
     devcon_json=$(cat .devcontainer/devcontainer.json)
@@ -209,6 +197,17 @@ delete-default-vpcs() {
         done
     done
 }
+
+function ghq-fzf() {
+  local project_name=$(ghq list | sort | fzf-tmux)
+  if [ -n "$project_name" ]; then
+    local project_full_path=$(ghq root)/$project_name
+    local project_relative_path="~/$(realpath --relative-to=$HOME $project_full_path)"
+    READLINE_LINE="z $project_relative_path"
+    READLINE_POINT=${#READLINE_LINE}
+  fi
+}
+bind -x '"\C-]": ghq-fzf'
 
 eval "$(mise x zoxide -- zoxide init bash)"
 
