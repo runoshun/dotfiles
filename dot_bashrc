@@ -199,7 +199,7 @@ delete-default-vpcs() {
 }
 
 function ghq-fzf() {
-  local project_name=$(ghq list | sort | fzf-tmux)
+  local project_name=$(ghq list | sort | fzf-tmux -p "80%,60%" --preview "bat --color=always --style=header,grid --line-range :80 $(ghq root)/{}/README.*")
   if [ -n "$project_name" ]; then
     local project_full_path=$(ghq root)/$project_name
     local project_relative_path="~/$(realpath --relative-to=$HOME $project_full_path)"
@@ -207,7 +207,7 @@ function ghq-fzf() {
     READLINE_POINT=${#READLINE_LINE}
   fi
 }
-bind -x '"\C-]": ghq-fzf'
+bind -x '"\C-g": ghq-fzf'
 
 eval "$(mise x zoxide -- zoxide init bash)"
 
