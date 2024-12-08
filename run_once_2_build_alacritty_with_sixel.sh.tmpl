@@ -1,19 +1,49 @@
 #!/bin/bash
 
+set -eu
+
 {{ if eq .chezmoi.os "darwin" }}
-if command -v nvim &>/dev/null; then
-  exit 0
-fi
 echo "installing alacritty with sixel support"
 
 dir=$(mktemp -d /tmp/alacritty.XXXXXX)
-cd "$dir" || exit 1
+cd "$dir"
 
 git clone https://github.com/ayosec/alacritty.git
-cd alacritty || exit 1
+cd alacritty
 
+# install rust
+mise use rust
+
+# get custom icons and converter script
+git clone https://github.com/dfl0/mac-icons.git
+curl -L "https://raw.githubusercontent.com/BenSouchet/png-to-icns/f8e0dfcd795d002838e292ebd3a7e720109e090b/png_to_icns.sh" > png_to_icns.sh
+
+function change_icon() {
+  bash png_to_icns.sh -i mac-icons/alacritty/icons/${1}/alacritty_${1}_full.png
+  rm extra/osx/Alacritty.app/Contents/Resources/alacritty.icns
+  mv icon.icns extra/osx/Alacritty.app/Contents/Resources/alacritty.icns
+}
+
+echo ""
+echo "building alacritty"
+echo ""
+change_icon smooth
 make app
 cp -r target/release/osx/Alacritty.app /Applications/
-{{ end }}
 
+
+echo ""
+echo "building anohter alacritty for float window"
+echo ""
+
+change_icon smooth_mono
+app_dir="extra/osx/AlacrittyFloat.app"
+sed -i '.bak' 's/Alacritty.app/AlacrittyFloat.app/g' Makefile
+mv extra/osx/Alacritty.app "$app_dir"
+sed -i '.bak' 's/Alacritty/AlacrittyFloat/g' "$app_dir"/Contents/Info.plist
+
+make app
+cp -r target/release/osx/AlacrittyFloat.app /Applications/
+
+{{ end }}
 # vim: set ft=bash :

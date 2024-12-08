@@ -1,8 +1,3 @@
-[general]
-import = [
-  "~/.config/alacritty/hybrid.toml",
-]
-
 [terminal.shell]
 {{ if eq .chezmoi.os "darwin" }}
 program = "/opt/homebrew/bin/bash"
@@ -14,14 +9,9 @@ program = "/bin/bash"
 args = ["-l"]
 
 [window]
-title = "Main"
 opacity = 1.0
 padding.x = 5
 padding.y = 5 
-
-decorations = "Buttonless"
-decorations_theme_variant = "Dark" # "Dark"
-startup_mode = "Maximized"
 
 {{ if eq .chezmoi.os "darwin" }}
 option_as_alt = "OnlyLeft"

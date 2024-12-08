@@ -1,4 +1,5 @@
 local hyper = { "cmd", "ctrl" }
+local hyper2 = { "cmd", "ctrl", "shift" }
 
 -- flags
 local alacrittyOpacity = 1.0
@@ -21,10 +22,21 @@ function setup()
 	double_press.action = function()
 		launchAlacritty()
 		adjustWindowsOfApp("0,0 " .. gridSize, "Arc", false)
-		nextTerminalSize = 2
 		alacrittyMaximized = true
 	end
 	hs.hotkey.bind(hyper, "u", toggleAlacrittyOpacity)
+
+	hs.hotkey.bind(hyper, "return", function()
+		launchAlacrittyFloat("term", "bash")
+	end)
+	hs.hotkey.bind(hyper, "n", function()
+		launchAlacrittyFloat("nb", "nb-list")
+	end)
+	hs.hotkey.bind(hyper, "i", function()
+		launchAlacrittyFloat("task", "taskwarrior-tui")
+	end)
+
+	ensureAlacrittyFloatTask(true)
 
 	-- Application mappings
 	local appMaps = {
@@ -44,16 +56,20 @@ function setup()
 	hs.hotkey.bind(hyper, "l", function()
 		adjustWindowsOfApp("0,0 4x4", "Arc")
 		adjustWindowsOfApp("4,0 2x4", "Alacritty")
+		adjustWindowsOfApp("4,0 2x4", "AlacrittyFloat")
 		alacrittyMaximized = false
 	end)
 	hs.hotkey.bind(hyper, "h", function()
 		adjustWindowsOfApp("0,0 3x4", "Arc")
 		adjustWindowsOfApp("3,0 3x4", "Alacritty")
+		adjustWindowsOfApp("3,0 3x4", "AlacrittyFloat")
 		alacrittyMaximized = false
 	end)
-	hs.hotkey.bind(hyper, "m", function()
+	hs.hotkey.bind(hyper, "r", function()
 		adjustWindowsOfApp("0,0 6x4", "Arc")
 		adjustWindowsOfApp("0,0 6x4", "Alacritty")
+		adjustWindowsOfApp("1,1 4x2", "AlacrittyFloat")
+		hs.application.find("AlacrittyFloat"):hide()
 		alacrittyMaximized = true
 	end)
 end
@@ -89,33 +105,112 @@ function launchAlacritty()
 	if app == nil then
 		hs.application.launchOrFocus(appName)
 		local app = hs.application.get(appName)
-		app:getWindow("Main"):maximize()
+		app:mainWindow():maximize()
 	elseif app:isFrontmost() and alacrittyMaximized then
 		app:hide()
 	elseif app:isFrontmost() and not alacrittyMaximized then
-		app:getWindow("Main"):maximize()
+		app:mainWindow():maximize()
 		app:setFrontmost()
 	else
 		local active_space = hs.spaces.focusedSpace()
-		local alacritty_win = app:getWindow("Main")
+		local alacritty_win = app:mainWindow()
 		hs.spaces.moveWindowToSpace(alacritty_win, active_space)
 		app:setFrontmost()
 		alacritty_win:maximize()
 	end
 end
 
+local alacrittyFloatTask = nil
+local alacrittyFloatPath = "/Applications/AlacrittyFloat.app/Contents/MacOS/alacritty"
+local alacrittyFloatSocketPath = "/tmp/alacritty-float.sock"
+function ensureAlacrittyFloatTask(kill)
+	if kill then
+		os.remove(alacrittyFloatSocketPath)
+		local app = hs.application.find("AlacrittyFloat", true)
+		if app then
+			app:kill()
+		end
+		alacrittyFloatTask = nil
+	end
+
+	if alacrittyFloatTask ~= nil and not alacrittyFloatTask:isRunning() then
+		alacrittyFloatTask = nil
+	end
+
+	if alacrittyFloatTask == nil then
+		alacrittyFloatTask = hs.task.new(alacrittyFloatPath, nil, { "--daemon", "--socket", alacrittyFloatSocketPath })
+		alacrittyFloatTask:start()
+	end
+end
+
+function launchAlacrittyFloat(title, cmd, grid)
+	ensureAlacrittyFloatTask()
+
+	local appName = "AlacrittyFloat"
+	local app = hs.application.find(appName, true)
+	local win = app:getWindow(title)
+	local launched = false
+	local grid = grid or "1,1 4x2"
+
+	if not win then
+		local cmd_opt = string.format(" -e /opt/homebrew/bin/bash -l -c '%s'", cmd)
+		if cmd == nil then
+			cmd_opt = ""
+		end
+
+		local exec_cmd = string.format(
+			"%s msg -s %s create-window -o window.opacity=0.9 -o 'window.startup_mode=\"Windowed\"' 'window.title=\"%s\"' 'window.decorations=\"Full\"'%s",
+			alacrittyFloatPath,
+			alacrittyFloatSocketPath,
+			title,
+			cmd_opt
+		)
+		os.execute(exec_cmd)
+		launched = true
+	end
+
+	hs.timer.doAfter(0.0, function()
+		local app = hs.application.find(appName, true)
+		local win = app:getWindow(title)
+		local frontmostWin = hs.window.frontmostWindow()
+		local isFrontmost = frontmostWin
+			and frontmostWin:application():name() == appName
+			and frontmostWin:title() == title
+
+		if (not isFrontmost and win) or launched then
+			-- set grid if app is launched
+			if launched then
+				hs.grid.set(win, grid)
+			end
+			app:setFrontmost()
+			app:unhide()
+			win:unminimize()
+
+			-- hide other windows
+			for i, win in ipairs(app:allWindows()) do
+				if win:title() ~= title then
+					win:minimize()
+				end
+			end
+		else
+			app:hide()
+		end
+	end)
+end
+
 function toggleAlacrittyOpacity()
-	local appName = "alacritty"
-	local app = hs.application.find(appName)
+	local appName = "Alacritty"
+	local app = hs.application.find(appName, true)
+	local exec = "/Applications/Alacritty.app/Contents/MacOS/alacritty"
 	if app.isFrontmost(app) then
 		if alacrittyOpacity == 1.0 then
-			hs.execute("alacritty msg config window.opacity=0.8", true)
+			hs.execute(exec .. " msg config window.opacity=0.8", true)
 			alacrittyOpacity = 0.8
 		elseif alacrittyOpacity == 0.8 then
-			hs.execute("alacritty msg config window.opacity=0.6", true)
+			hs.execute(exec .. " msg config window.opacity=0.6", true)
 			alacrittyOpacity = 0.6
 		else
-			hs.execute("alacritty msg config window.opacity=1.0", true)
+			hs.execute(exec .. " msg config window.opacity=1.0", true)
 			alacrittyOpacity = 1.0
 		end
 	end
