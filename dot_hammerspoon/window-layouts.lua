@@ -26,17 +26,17 @@ function setup()
 	end
 	hs.hotkey.bind(hyper, "u", toggleAlacrittyOpacity)
 
-	hs.hotkey.bind(hyper, "return", function()
-		launchAlacrittyFloat("term", "bash")
-	end)
-	hs.hotkey.bind(hyper, "n", function()
-		launchAlacrittyFloat("nb", "nb-list")
-	end)
-	hs.hotkey.bind(hyper, "i", function()
-		launchAlacrittyFloat("task", "taskwarrior-tui")
-	end)
-
-	ensureAlacrittyFloatTask(true)
+	-- hs.hotkey.bind(hyper, "return", function()
+	-- 	launchAlacrittyFloat("term", "bash")
+	-- end)
+	-- hs.hotkey.bind(hyper, "n", function()
+	-- 	launchAlacrittyFloat("nb", "nb-list")
+	-- end)
+	-- hs.hotkey.bind(hyper, "i", function()
+	-- 	launchAlacrittyFloat("task", "taskwarrior-tui")
+	-- end)
+	--
+	-- ensureAlacrittyFloatTask(true)
 
 	-- Application mappings
 	local appMaps = {
@@ -56,20 +56,20 @@ function setup()
 	hs.hotkey.bind(hyper, "l", function()
 		adjustWindowsOfApp("0,0 4x4", "Arc")
 		adjustWindowsOfApp("4,0 2x4", "Alacritty")
-		adjustWindowsOfApp("4,0 2x4", "AlacrittyFloat")
+		-- adjustWindowsOfApp("4,0 2x4", "AlacrittyFloat")
 		alacrittyMaximized = false
 	end)
 	hs.hotkey.bind(hyper, "h", function()
 		adjustWindowsOfApp("0,0 3x4", "Arc")
 		adjustWindowsOfApp("3,0 3x4", "Alacritty")
-		adjustWindowsOfApp("3,0 3x4", "AlacrittyFloat")
+		-- adjustWindowsOfApp("3,0 3x4", "AlacrittyFloat")
 		alacrittyMaximized = false
 	end)
 	hs.hotkey.bind(hyper, "r", function()
 		adjustWindowsOfApp("0,0 6x4", "Arc")
 		adjustWindowsOfApp("0,0 6x4", "Alacritty")
-		adjustWindowsOfApp("1,1 4x2", "AlacrittyFloat")
-		hs.application.find("AlacrittyFloat"):hide()
+		-- adjustWindowsOfApp("1,1 4x2", "AlacrittyFloat")
+		-- hs.application.find("AlacrittyFloat"):hide()
 		alacrittyMaximized = true
 	end)
 end
