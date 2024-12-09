@@ -257,12 +257,15 @@ function nb-list() {
 
   to_grep="become($SHELL -l -c 'nb-grep')"
 
+  keys="C-a: add, C-x: delete, C-o: edit journal, Enter: edit"
+
   fzf \
     --delimiter : \
     --prompt "list> " \
     --ansi \
-    --border-label " $(color cyan "< notebook: $(basename ${nb_root}) >") | $(color red list) | grep | " \
+    --border-label " $(color cyan "< notebook: $(basename ${nb_root}) >") | $(color red list) | grep" \
     --bind "start:$reload,ctrl-a:${add},ctrl-x:${delete},enter:${edit},ctrl-o:${edit_journal},tab:${to_grep}" \
+    --header "$keys" \
     --preview "$preview" \
     --preview-window=right:50%
 }

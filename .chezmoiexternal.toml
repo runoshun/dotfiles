@@ -8,7 +8,7 @@ type = "git-repo"
 refreshPeriod = "168h"
 url = "https://github.com/alacritty/alacritty-theme"
 
-[".config/memo/_posts"]
-type = "git-repo"
-refreshPeriod = "1h"
-url = "https://github.com/runoshun/my-memos"
+# [".config/memo/_posts"]
+# type = "git-repo"
+# refreshPeriod = "1h"
+# url = "https://github.com/runoshun/my-memos"
