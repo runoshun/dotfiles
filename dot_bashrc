@@ -242,8 +242,18 @@ function color() {
   echo -e "\e[${colorCode}m${message}\e[0m"
 }
 
+function nb-journal() {
+  journal_file="journal-$(date +%Y-%m-%d).md"
+  if nb show ${journal_file} &>/dev/null; then
+    nb new ${journal_file}
+  else
+    nb edit ${journal_file}
+  fi
+}
+
 function nb-list() {
   nb_root=$(nb notebooks current --path)
+  start_cmd=""
 
   list_cmd="nb list --no-color --no-ids --path --no-indicator"
 
@@ -259,12 +269,16 @@ function nb-list() {
 
   keys="C-a: add, C-x: delete, C-o: edit journal, Enter: edit"
 
+  if [ "$1" == "journal" ]; then
+      start_cmd="+${edit_journal}"
+  fi
+
   fzf \
     --delimiter : \
     --prompt "list> " \
     --ansi \
-    --border-label " $(color cyan "< notebook: $(basename ${nb_root}) >") | $(color red list) | grep" \
-    --bind "start:$reload,ctrl-a:${add},ctrl-x:${delete},enter:${edit},ctrl-o:${edit_journal},tab:${to_grep}" \
+    --border-label " $(color cyan "< notebook: $(basename ${nb_root}) >") | $(color red list) | grep | " \
+    --bind "start:${reload}${start_cmd},ctrl-a:${add},ctrl-x:${delete},enter:${edit},ctrl-o:${edit_journal},tab:${to_grep}" \
     --header "$keys" \
     --preview "$preview" \
     --preview-window=right:50%
