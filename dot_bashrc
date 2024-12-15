@@ -242,6 +242,11 @@ function color() {
   echo -e "\e[${colorCode}m${message}\e[0m"
 }
 
+nb_root=""
+function reset-nb-root() {
+  nb_root=""
+}
+
 function nb-journal() {
   journal_file="journal-$(date +%Y-%m-%d).md"
   if nb show ${journal_file} &>/dev/null; then
@@ -252,12 +257,14 @@ function nb-journal() {
 }
 
 function nb-list() {
-  nb_root=$(nb notebooks current --path)
+  if [ -z "$nb_root" ]; then
+    nb_root=$(nb notebooks current --path)
+  fi
   start_cmd=""
 
-  list_cmd="nb list --no-color --no-ids --path --no-indicator"
+  list_cmd="nb list --no-color --no-ids --filename --no-indicator"
 
-  preview="bat --color=always --style=numbers {1}"
+  preview="bat --color=always --style=numbers ${nb_root}/{1}"
   reload="reload(${list_cmd})"
 
   add="execute(nb add -f {q}.md)+reload(${list_cmd})"
@@ -281,10 +288,12 @@ function nb-list() {
     --bind "start:${reload}${start_cmd},ctrl-a:${add},ctrl-x:${delete},enter:${edit},ctrl-o:${edit_journal},tab:${to_grep}" \
     --header "$keys" \
     --preview "$preview" \
-    --preview-window=right:50%
+    --preview-window=right:60%
 }
 function nb-grep() {
-  nb_root=$(nb notebooks current --path)
+  if [ -z "$nb_root" ]; then
+    nb_root=$(nb notebooks current --path)
+  fi
 
   grep_cmd="rg --no-heading {q} ${nb_root}"
   preview="bat --color=always --style=numbers {1}"
