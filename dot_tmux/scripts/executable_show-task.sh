@@ -2,6 +2,7 @@
 max_tasks=2
 tasks=$(task rc.verbose: ls limit:$max_tasks)
 n_tasks=$(echo "$tasks" | wc -l)
+
 if [ $n_tasks -eq 0 ]; then
   echo "No Tasks"
 else
