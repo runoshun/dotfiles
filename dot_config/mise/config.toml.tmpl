@@ -17,12 +17,12 @@ bat = "latest"
 fd = "latest"
 "pipx:awsume" = "latest"
 "pipx:aider-chat" = "latest"
+"pipx:vit" = "latest"
 "npm:nb.sh" = "latest"
 zoxide = "latest"
 {{ if or (eq .chezmoi.os "darwin") (ne .chezmoi.arch "arm64") }}
 neovim = "0.10.2"
 ripgrep = "latest"
-"pipx:vit" = "latest"
 {{ end }}
 
 [settings]

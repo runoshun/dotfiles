@@ -269,7 +269,7 @@ function nb-list() {
 
   add="execute(nb add -f {q}.md)+reload(${list_cmd})"
   delete="execute(nb delete {})+reload(${list_cmd})"
-  edit="execute(nvim {1})"
+  edit="execute(nvim ${nb_root}/{1})"
   edit_journal="execute(nvim ${nb_root}/journal-$(date +%Y-%m-%d).md)"
 
   to_grep="become($SHELL -l -c 'nb-grep')"
