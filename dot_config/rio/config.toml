@@ -1,0 +1,37 @@
+theme = "hybrid"
+padding-x = 5
+
+[bindings]
+keys = [
+  { key = "n", with = "command", action = "none" },
+  { key = "t", with = "command", action = "none" },
+]
+
+[editor]
+program = "nvim"
+args = []
+
+
+[shell]
+program = "/opt/homebrew/bin/bash"
+args = ["--login"]
+
+[fonts]
+size = 13
+family = "JetBrainsMonoNL Nerd Font Propo"
+extras = [{ family = "Cica" }]
+width = "ExtraCondensed"
+
+[fonts.regular]
+family = "JetBrainsMonoNL Nerd Font Propo"
+style = "Normal"
+weight = 800
+
+[navigation]
+hide-if-single = true
+cliclable = true
+
+[window]
+mode = "Maximized"
+decorations = "Disabled"
+opacity = 1.0

@@ -16,27 +16,16 @@ function setup()
 		hs.grid.show()
 	end)
 
-	-- alacritty
+	-- term
 	local double_press = require("ctrlDoublePress")
+	local termApp = "Rio"
 	double_press.timeFrame = 0.5
 	double_press.action = function()
-		launchAlacritty()
+		launchRioTerm()
 		adjustWindowsOfApp("0,0 " .. gridSize, "Arc", false)
 		alacrittyMaximized = true
 	end
-	hs.hotkey.bind(hyper, "u", toggleAlacrittyOpacity)
-
-	-- hs.hotkey.bind(hyper, "return", function()
-	-- 	launchAlacrittyFloat("term", "bash")
-	-- end)
-	-- hs.hotkey.bind(hyper, "n", function()
-	-- 	launchAlacrittyFloat("nb", "nb-list")
-	-- end)
-	-- hs.hotkey.bind(hyper, "i", function()
-	-- 	launchAlacrittyFloat("task", "taskwarrior-tui")
-	-- end)
-	--
-	-- ensureAlacrittyFloatTask(true)
+	hs.hotkey.bind(hyper, "u", toggleRioTermOpacity)
 
 	-- Application mappings
 	local appMaps = {
@@ -55,19 +44,19 @@ function setup()
 	-- browser and terminal
 	hs.hotkey.bind(hyper, "l", function()
 		adjustWindowsOfApp("0,0 4x4", "Arc")
-		adjustWindowsOfApp("4,0 2x4", "Alacritty")
+		adjustWindowsOfApp("4,0 2x4", termApp)
 		-- adjustWindowsOfApp("4,0 2x4", "AlacrittyFloat")
 		alacrittyMaximized = false
 	end)
 	hs.hotkey.bind(hyper, "h", function()
 		adjustWindowsOfApp("0,0 3x4", "Arc")
-		adjustWindowsOfApp("3,0 3x4", "Alacritty")
+		adjustWindowsOfApp("3,0 3x4", termApp)
 		-- adjustWindowsOfApp("3,0 3x4", "AlacrittyFloat")
 		alacrittyMaximized = false
 	end)
 	hs.hotkey.bind(hyper, "r", function()
 		adjustWindowsOfApp("0,0 6x4", "Arc")
-		adjustWindowsOfApp("0,0 6x4", "Alacritty")
+		adjustWindowsOfApp("0,0 6x4", termApp)
 		-- adjustWindowsOfApp("1,1 4x2", "AlacrittyFloat")
 		-- hs.application.find("AlacrittyFloat"):hide()
 		alacrittyMaximized = true
@@ -214,6 +203,51 @@ function toggleAlacrittyOpacity()
 			alacrittyOpacity = 1.0
 		end
 	end
+end
+
+-- Rio
+function launchRioTerm()
+	local appName = "Rio"
+	local app = hs.application.find(appName, true)
+
+	if app == nil then
+		hs.application.launchOrFocus(appName)
+		local app = hs.application.get(appName)
+		app:mainWindow():maximize()
+	elseif app:isFrontmost() and alacrittyMaximized then
+		app:hide()
+	elseif app:isFrontmost() and not alacrittyMaximized then
+		app:mainWindow():maximize()
+		app:setFrontmost()
+	else
+		local active_space = hs.spaces.focusedSpace()
+		local alacritty_win = app:mainWindow()
+		hs.spaces.moveWindowToSpace(alacritty_win, active_space)
+		app:setFrontmost()
+		alacritty_win:maximize()
+	end
+end
+
+function toggleRioTermOpacity()
+	config_file_name = string.format("%s/.config/rio/config.toml", os.getenv("HOME"))
+
+	opaque = "opacity = 1.0"
+	transparent = "opacity = 0.75"
+
+	local file = io.open(config_file_name)
+
+	local content = file:read("*a")
+	file:close()
+
+	if string.match(content, opaque) then
+		content = string.gsub(content, opaque, transparent)
+	else
+		content = string.gsub(content, transparent, opaque)
+	end
+
+	local fileedited = io.open(config_file_name, "w")
+	fileedited:write(content)
+	fileedited:close()
 end
 
 setup()

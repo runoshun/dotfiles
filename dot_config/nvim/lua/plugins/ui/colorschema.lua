@@ -6,4 +6,11 @@ return {
       transparent = true,
     },
   },
+  {
+    "HoNamDuong/hybrid.nvim",
+    optional = true,
+    opts = {
+      transparent = true,
+    },
+  }
 }
