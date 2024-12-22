@@ -37,24 +37,28 @@ vim.keymap.set(
 -- キーマップ
 local MyTerminal = require("my_toggle_terminal")
 _G._my_rightbelow_terminal = MyTerminal:new(15, "belowright")
-_G._my_aider_terminal = MyTerminal:new(72, "vertical belowright", function(files)
+_G._my_aider_terminal = MyTerminal:new(72, "vertical belowright", function(files, watch)
 	local file_args = {}
+	local bufnrs
 	if files == "all" then
-		local cwd = vim.fn.getcwd()
-		for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
-			if vim.api.nvim_buf_is_loaded(bufnr) then
-				local bufpath = vim.api.nvim_buf_get_name(bufnr)
-				local file_exsit = vim.fn.filereadable(bufpath)
-				if file_exsit == 1 and vim.startswith(bufpath, cwd) then
-					table.insert(file_args, "--file")
-					table.insert(file_args, '"' .. bufpath .. '"')
-				end
+		bufnrs = vim.api.nvim_list_bufs()
+	else
+		bufnrs = { vim.api.nvim_get_current_buf() }
+	end
+
+	print(vim.inspect(bufnrs))
+	local cwd = vim.fn.getcwd()
+	for _, bufnr in ipairs(bufnrs) do
+		if vim.api.nvim_buf_is_loaded(bufnr) then
+			local bufpath = vim.api.nvim_buf_get_name(bufnr)
+			local file_exsit = vim.fn.filereadable(bufpath)
+			if file_exsit == 1 and vim.startswith(bufpath, cwd) then
+				table.insert(file_args, "--file")
+				table.insert(file_args, '"' .. bufpath .. '"')
 			end
 		end
-	else
-		local buf_fn = vim.fn.expand("%:p")
-		file_args = { "--file", buf_fn }
 	end
+
 	return "aider --env-file ~/.aider.env " .. table.concat(file_args, " ")
 end, true)
 
@@ -88,28 +92,9 @@ vim.keymap.set(
 	"<cmd>CopilotChatToggle<CR>",
 	{ noremap = true, silent = true, desc = "Toggle Copilot Chat" }
 )
-
 vim.keymap.set(
 	"n",
-	"<leader>aPp",
-	"<cmd>StartCopilotProxy<CR>",
-	{ noremap = true, silent = true, desc = "Start Copilot Proxy" }
-)
-vim.keymap.set(
-	"n",
-	"<leader>aPs",
-	"<cmd>StopCopilotProxy<CR>",
-	{ noremap = true, silent = true, desc = "Stop Copilot Proxy" }
-)
-vim.keymap.set(
-	"n",
-	"<leader>aPr",
+	"<leader>aP",
 	"<cmd>RestartCopilotProxy<CR>",
 	{ noremap = true, silent = true, desc = "Restart Copilot Proxy" }
-)
-vim.keymap.set(
-	"n",
-	"<leader>aPg",
-	"<cmd>GenerateAiderSettings<CR>",
-	{ noremap = true, silent = true, desc = "Generate Aider Settings" }
 )
