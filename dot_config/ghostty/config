@@ -1,0 +1,20 @@
+font-family = "UDEV Gothic NF"
+font-size = 13.5
+font-feature = -dlig
+
+command = "/opt/homebrew/bin/bash -l"
+shell-integration = bash
+
+window-height = 10000
+window-width = 10000
+window-decoration = false
+window-padding-x = 4,4
+
+clipboard-read = allow
+clipboard-write = allow
+
+theme = Hybrid
+
+quit-after-last-window-closed = true
+
+keybind = command+l=reload_config
