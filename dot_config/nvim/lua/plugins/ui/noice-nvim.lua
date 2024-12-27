@@ -6,6 +6,9 @@ return {
 			messages = {
 				enabled = false,
 			},
+			notify = {
+				enabled = false,
+			},
 			lsp = {
 				hover = {
 					enabled = false,
