@@ -144,9 +144,9 @@ simplified_ui true
 // Default: $SHELL
 //
 {{ if eq .chezmoi.os "darwin" }}
-default_shell = "/opt/homebrew/bin/bash"
+default_shell "/opt/homebrew/bin/bash"
 {{ else }}
-default_shell = "/bin/bash"
+default_shell "/bin/bash"
 {{ end }}
 
 // Choose the path to override cwd that zellij will use for opening new panes
