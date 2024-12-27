@@ -1,0 +1,41 @@
+layout {
+    // pane size=1 borderless=true {
+    //     plugin location="compact-bar"
+    // }
+    // pane
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="https://github.com/dj95/zjstatus/releases/latest/download/zjstatus.wasm" {
+                format_left   "{mode} #[bg=blue,fg=black,bold] {session} "
+                format_center "{tabs}"
+                format_right  "{command_res_usage}"
+                format_space  ""
+
+                border_enabled  "false"
+                hide_frame_for_single_pane "false"
+                hide_frame_except_for_search "true"
+                hide_frame_except_for_fullscreen "true"
+
+                mode_normal  "#[bg=blue,fg=black] NORMAL "
+                mode_tmux    "#[bg=yellow,fg=black]  TMUX  "
+
+                tab_normal              "#[bg=blue,fg=black] {index} #[bg=black,fg=white] {name} "
+                tab_active              "#[bg=green,fg=black] {index} #[bg=black,fg=green,bold,italic] {name} "
+                tab_active_fullscreen   "#[bg=green,fg=black] {index} #[bg=black,fg=green,bold,italic] {name} {fullscreen_indicator} "
+                tab_active_sync         "#[bg=green,fg=black] {index} #[bg=black,fg=green,bold,italic] {name} {sync_indicator} "
+                tab_sync_indicator       "<> "
+                tab_fullscreen_indicator "[] "
+                tab_floating_indicator   "⬚ "
+                tab_separator           "  "
+
+                command_res_usage_command     "bash {{ .chezmoi.homeDir }}/.config/zellij/scripts/res-usage.sh"
+                command_res_usage_format      "#[fg=blue] {stdout} {stderr} "
+                command_res_usage_interval    "3"
+                command_res_usage_rendermode  "dynamic"
+            }
+        }
+        children
+    }
+}
+
+// vim: ft=kdl :

@@ -75,9 +75,10 @@ keybinds clear-defaults=true {
         bind "Space" { NextSwapLayout; }
         bind "x" { CloseFocus; SwitchToMode "Normal"; }
         bind "s" {
-            LaunchOrFocusPlugin "session-manager" {
+            LaunchOrFocusPlugin "https://github.com/JoseMM2002/zellij-favs/releases/download/v0.1.7/zellij-favs.wasm" {
                 floating true
-                move_to_focused_tab true
+                ignore_case true
+                quick_jump true
             }
             SwitchToMode "normal"
         }
@@ -142,7 +143,11 @@ simplified_ui true
 // Choose the path to the default shell that zellij will use for opening new panes
 // Default: $SHELL
 //
-default_shell "/opt/homebrew/bin/bash"
+{{ if eq .chezmoi.os "darwin" }}
+default_shell = "/opt/homebrew/bin/bash"
+{{ else }}
+default_shell = "/bin/bash"
+{{ end }}
 
 // Choose the path to override cwd that zellij will use for opening new panes
 //
@@ -189,26 +194,26 @@ scrollback_lines_to_serialize 10000
 // For more examples, see: https://github.com/zellij-org/zellij/tree/main/example/themes
 // Once these themes are defined, one of them should to be selected in the "theme" section of this file
 //
-// themes {
-//     dracula {
-//         fg 248 248 242
-//         bg 40 42 54
-//         red 255 85 85
-//         green 80 250 123
-//         yellow 241 250 140
-//         blue 98 114 164
-//         magenta 255 121 198
-//         orange 255 184 108
-//         cyan 139 233 253
-//         black 0 0 0
-//         white 255 255 255
-//     }
-// }
+themes {
+    hybrid {
+        fg "#c5c8c6"
+        bg "#1d1f21"
+        red "#cc6666"
+        green "#b5bd68"
+        yellow "#f0c674"
+        blue "#81a2be"
+        magenta "#b294bb"
+        orange "#de935f"
+        cyan "#8abeb7"
+        black "#1d1f21"
+        white "#c5c8c6"
+    }
+}
 
 // Choose the theme that is specified in the themes section.
 // Default: default
 //
-// theme "default"
+theme "hybrid"
 
 // The name of the default layout to load on startup
 // Default: "default"
@@ -306,3 +311,5 @@ scrollback_lines_to_serialize 10000
 // Default: true (if the host terminal supports it)
 //
 // support_kitty_keyboard_protocol false
+
+// vim: ft=kdl :
