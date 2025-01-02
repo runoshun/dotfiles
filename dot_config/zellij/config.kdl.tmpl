@@ -117,6 +117,20 @@ keybinds clear-defaults=true {
         bind "Ctrl j" "j" "Down" { MovePane "Down"; }
         bind "Ctrl k" "k" "Up" { MovePane "Up"; }
         bind "Ctrl l" "l" "Right" { MovePane "Right"; }
+     }
+    scroll {
+        bind "Esc" "q" { SwitchToMode "Normal"; }
+        bind "e" { EditScrollback; SwitchToMode "Normal"; }
+        bind "/" { SwitchToMode "EnterSearch"; SearchInput 0; }
+        bind "Ctrl c" { ScrollToBottom; SwitchToMode "Normal"; }
+        bind "j" "Down" { ScrollDown; }
+        bind "k" "Up" { ScrollUp; }
+        bind "Ctrl f" "PageDown" "Right" "l" { PageScrollDown; }
+        bind "Ctrl b" "PageUp" "Left" "h" { PageScrollUp; }
+        bind "d" { HalfPageScrollDown; }
+        bind "u" { HalfPageScrollUp; }
+        // uncomment this and adjust key if using copy_on_select=false
+        // bind "Alt c" { Copy; }
     }
 }
 
