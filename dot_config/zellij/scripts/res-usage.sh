@@ -40,27 +40,26 @@ get_cpu_usage() {
     else
         # Linux: /proc/stat を使用して小数点1位まで表示
         CPU_IDLE=$(top -bn1 | grep "Cpu(s)" | sed "s/.*, *\([0-9.]*\)%* id.*/\1/")
-        echo "scale=1; 100 - $CPU_IDLE" | bc
+        echo "$CPU_IDLE" | awk '{printf "%.1f", 100-$1}'
     fi
 }
 
 get_memory_usage() {
     if [ "$OS" = "Darwin" ]; then
         # トータルメモリをGB単位で取得
-        TOTAL_MEM=$(sysctl -n hw.memsize)
-        TOTAL_MEM=$(echo "scale=1; $TOTAL_MEM / 1024 / 1024 / 1024" | bc)
+        TOTAL_MEM=$(sysctl -n hw.memsize | awk '{printf "%.1f", $1 / 1024 / 1024 / 1024}')
 
         # memory_pressure から空きメモリの割合を取得し、使用率を計算
         FREE_PERCENT=$(memory_pressure | grep "System-wide memory free percentage:" | awk '{print $5}' | tr -d '%')
         USED_PERCENT=$((100 - FREE_PERCENT))
 
         # 使用メモリをGBに変換
-        USED_MEM=$(echo "scale=1; $TOTAL_MEM * $USED_PERCENT / 100" | bc)
+        USED_MEM=$(echo "$TOTAL_MEM $USED_PERCENT" | awk '{printf "%.1f", $1 * $2 / 100}')
 
-        echo "${USED_MEM}/${TOTAL_MEM}GB"
+        echo "${USED_MEM}/${TOTAL_MEM} GB"
     else
         # Linux: free コマンドを使用
-        free -g | awk '/Mem:/ {printf "%.1f/%.1fGB", $3, $2}'
+        free -g | awk '/Mem:/ {printf "%.1f/%.1f GB", $3, $2}'
     fi
 }
 

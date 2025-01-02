@@ -48,6 +48,7 @@ keybinds clear-defaults=true {
         bind "Ctrl b" { Write 2; SwitchToMode "Normal"; }
         bind "-" { NewPane "Down"; SwitchToMode "Normal"; }
         bind "|" { NewPane "Right"; SwitchToMode "Normal"; }
+        bind "f" { ToggleFloatingPanes; SwitchToMode "Normal"; }
         bind "t" { ToggleFocusFullscreen; SwitchToMode "Normal"; }
         bind "c" { NewTab; SwitchToMode "Normal"; }
         bind "," { SwitchToMode "RenameTab"; }
@@ -70,11 +71,22 @@ keybinds clear-defaults=true {
         bind "L" { Resize "Right"; SwitchToMode "Resize"; }
         bind "J" { Resize "Down"; SwitchToMode "Resize"; }
         bind "K" { Resize "Up"; SwitchToMode "Resize"; }
+        bind "Ctrl h" { MovePane "Left"; SwitchToMode "Move"; }
+        bind "Ctrl l" { MovePane "Right"; SwitchToMode "Move"; }
+        bind "Ctrl j" { MovePane "Down"; SwitchToMode "Move"; }
+        bind "Ctrl k" { MovePane "Up"; SwitchToMode "Move"; }
         bind "o" { FocusNextPane; }
         bind "d" { Detach; }
         bind "Space" { NextSwapLayout; }
         bind "x" { CloseFocus; SwitchToMode "Normal"; }
         bind "s" {
+            LaunchOrFocusPlugin "session-manager" {
+                floating true
+                move_to_focused_tab true
+            };
+            SwitchToMode "Normal"
+        }
+        bind "r" {
             LaunchOrFocusPlugin "https://github.com/JoseMM2002/zellij-favs/releases/download/v0.1.7/zellij-favs.wasm" {
                 floating true
                 ignore_case true
@@ -87,8 +99,7 @@ keybinds clear-defaults=true {
         }
     }
     resize {
-        bind "Esc" { SwitchToMode "Normal"; }
-        bind "q" { SwitchToMode "Normal"; }
+        bind "Esc" "q" { SwitchToMode "Normal"; }
         bind "h" { Resize "Left"; }
         bind "l" { Resize "Right"; }
         bind "j" { Resize "Down"; }
@@ -97,6 +108,15 @@ keybinds clear-defaults=true {
         bind "L" { Resize "Right"; }
         bind "J" { Resize "Down"; }
         bind "K" { Resize "Up"; }
+    }
+    move {
+        bind "Esc" "q" { SwitchToMode "Normal"; }
+        bind "n" "Tab" { MovePane; }
+        bind "p" { MovePaneBackwards; }
+        bind "Ctrl h" "h" "Left" { MovePane "Left"; }
+        bind "Ctrl j" "j" "Down" { MovePane "Down"; }
+        bind "Ctrl k" "k" "Up" { MovePane "Up"; }
+        bind "Ctrl l" "l" "Right" { MovePane "Right"; }
     }
 }
 
