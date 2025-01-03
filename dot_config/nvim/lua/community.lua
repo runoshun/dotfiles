@@ -21,6 +21,7 @@ return {
 	-- { import = "astrocommunity.colorscheme.monokai-pro-nvim" },
 
 	-- packs
+	{ import = "astrocommunity.pack.kotlin" },
 	{ import = "astrocommunity.pack.python-ruff" },
 	{ import = "astrocommunity.pack.typescript-all-in-one" },
 	{ import = "astrocommunity.pack.rust" },

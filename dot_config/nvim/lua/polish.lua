@@ -37,7 +37,9 @@ vim.keymap.set(
 -- キーマップ
 local MyTerminal = require("my_toggle_terminal")
 _G._my_rightbelow_terminal = MyTerminal:new(15, "belowright")
-_G._my_aider_terminal = MyTerminal:new(72, "vertical belowright", function(files, watch)
+
+local ZellijTerminal = require("zellij_new_pane")
+_G._my_aider_terminal = ZellijTerminal:new(72, "vertical belowright", function(files, watch)
 	local file_args = {}
 	local bufnrs
 	if files == "all" then
@@ -77,7 +79,7 @@ vim.keymap.set(
 vim.keymap.set(
 	"n",
 	"<leader>ai",
-	"<cmd>lua _G._my_aider_terminal:toggle()<CR>",
+	"<cmd>lua _G._my_aider_terminal:open()<CR>",
 	{ noremap = true, silent = true, desc = "Toggle Aider Terminal" }
 )
 vim.keymap.set(
