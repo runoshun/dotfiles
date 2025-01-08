@@ -58,23 +58,24 @@ function setup()
 	-- Layouts
 	-- browser and terminal
 	hs.hotkey.bind(hyper, "l", function()
-		adjustWindowsOfApp("0,0 4x4", "Arc")
-		adjustWindowsOfApp("4,0 2x4", termApp)
-		-- adjustWindowsOfApp("4,0 2x4", "AlacrittyFloat")
-		alacrittyMaximized = false
+		local app = hs.application.frontmostApplication()
+		adjustWindowsOfApp("4,0 2x4", app:name())
+	end)
+	hs.hotkey.bind(hyper, "k", function()
+		local app = hs.application.frontmostApplication()
+		adjustWindowsOfApp("3,0 3x4", app:name())
 	end)
 	hs.hotkey.bind(hyper, "h", function()
-		adjustWindowsOfApp("0,0 3x4", "Arc")
-		adjustWindowsOfApp("3,0 3x4", termApp)
-		-- adjustWindowsOfApp("3,0 3x4", "AlacrittyFloat")
-		alacrittyMaximized = false
+		local app = hs.application.frontmostApplication()
+		adjustWindowsOfApp("0,0 3x4", app:name())
 	end)
-	hs.hotkey.bind(hyper, "r", function()
-		adjustWindowsOfApp("0,0 6x4", "Arc")
-		adjustWindowsOfApp("0,0 6x4", termApp)
-		-- adjustWindowsOfApp("1,1 4x2", "AlacrittyFloat")
-		-- hs.application.find("AlacrittyFloat"):hide()
-		alacrittyMaximized = true
+	hs.hotkey.bind(hyper, "g", function()
+		local app = hs.application.frontmostApplication()
+		adjustWindowsOfApp("0,0 2x4", app:name())
+	end)
+	hs.hotkey.bind(hyper, "m", function()
+		local app = hs.application.frontmostApplication()
+		adjustWindowsOfApp("0,0 6x4", app:name())
 	end)
 end
 
@@ -229,9 +230,7 @@ function launchGhostty()
 		hs.application.launchOrFocus(appName)
 		local app = hs.application.get(appName)
 		app:mainWindow():maximize()
-	elseif app:isFrontmost() and alacrittyMaximized then
-		app:hide()
-	elseif app:isFrontmost() and not alacrittyMaximized then
+	elseif app:isFrontmost() then
 		app:mainWindow():maximize()
 		app:setFrontmost()
 	else
