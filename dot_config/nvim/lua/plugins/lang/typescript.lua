@@ -17,7 +17,7 @@ return {
 			return vim.fn.filereadable(vim.fn.expand("%:p:h") .. "/biome.json") == 1
 		end,
 		opts = function()
-			local nls = require("null-ls")
+			local nls = require("none-ls")
 			return {
 				sources = {
 					nls.builtins.formatting.biome,
