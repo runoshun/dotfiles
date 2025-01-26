@@ -1,42 +1,41 @@
 keybinds clear-defaults=true {
     shared {
-      bind "Ctrl g" { SwitchToMode "Normal"; }
-      bind "Ctrl h" {
-          MessagePlugin "https://github.com/hiasr/vim-zellij-navigator/releases/download/0.2.1/vim-zellij-navigator.wasm" {
-              name "move_focus_or_tab";
-              payload "left";
+        bind "Ctrl g" { SwitchToMode "Normal"; }
+        bind "Ctrl h" {
+            MessagePlugin "https://github.com/hiasr/vim-zellij-navigator/releases/download/0.2.1/vim-zellij-navigator.wasm" {
+                name "move_focus_or_tab";
+                payload "left";
 
-              // Plugin Configuration
-              move_mod "ctrl"; // Optional, should be added on every command if you want to use it
-          };
-      }
+                move_mod "ctrl"; 
+            };
+        }
 
-      bind "Ctrl j" {
-          MessagePlugin "https://github.com/hiasr/vim-zellij-navigator/releases/download/0.2.1/vim-zellij-navigator.wasm" {
-              name "move_focus";
-              payload "down";
+        bind "Ctrl j" {
+            MessagePlugin "https://github.com/hiasr/vim-zellij-navigator/releases/download/0.2.1/vim-zellij-navigator.wasm" {
+                name "move_focus";
+                payload "down";
 
-              move_mod "ctrl";
-          };
-      }
+                move_mod "ctrl";
+            };
+        }
 
-      bind "Ctrl k" {
-          MessagePlugin "https://github.com/hiasr/vim-zellij-navigator/releases/download/0.2.1/vim-zellij-navigator.wasm" {
-              name "move_focus";
-              payload "up";
+        bind "Ctrl k" {
+            MessagePlugin "https://github.com/hiasr/vim-zellij-navigator/releases/download/0.2.1/vim-zellij-navigator.wasm" {
+                name "move_focus";
+                payload "up";
 
-              move_mod "ctrl";
-          };
-      }
+                move_mod "ctrl";
+            };
+        }
 
-      bind "Ctrl l" {
-          MessagePlugin "https://github.com/hiasr/vim-zellij-navigator/releases/download/0.2.1/vim-zellij-navigator.wasm" {
-              name "move_focus_or_tab";
-              payload "right";
+        bind "Ctrl l" {
+            MessagePlugin "https://github.com/hiasr/vim-zellij-navigator/releases/download/0.2.1/vim-zellij-navigator.wasm" {
+                name "move_focus_or_tab";
+                payload "right";
 
-              move_mod "ctrl";
-          };
-      }
+                move_mod "ctrl";
+            };
+        }
     }
     normal {
       bind "Ctrl t" { SwitchToMode "Tmux"; }
@@ -46,6 +45,18 @@ keybinds clear-defaults=true {
         bind "q" { SwitchToMode "Normal"; }
         bind "[" { SwitchToMode "Scroll"; }
         bind "Ctrl b" { Write 2; SwitchToMode "Normal"; }
+        bind "Ctrl t" {
+            Run "zellij" "run" "--close-on-exit" "--floating" "-x" "10%" "-y" "10%" "--width" "80%" "--height" "80%" "--" "vit" {
+                close_on_exit true
+            };
+            SwitchToMode "Normal";
+        }
+        bind "Ctrl n" {
+            Run "zellij" "run" "--close-on-exit" "--floating" "-x" "10%" "-y" "10%" "--width" "80%" "--height" "80%" "--" "bash" "-l" "-c" "nb-list" {
+                close_on_exit true
+            };
+            SwitchToMode "Normal";
+        }
         bind "-" { NewPane "Down"; SwitchToMode "Normal"; }
         bind "|" { NewPane "Right"; SwitchToMode "Normal"; }
         bind "f" { ToggleFloatingPanes; SwitchToMode "Normal"; }
@@ -117,7 +128,7 @@ keybinds clear-defaults=true {
         bind "Ctrl j" "j" "Down" { MovePane "Down"; }
         bind "Ctrl k" "k" "Up" { MovePane "Up"; }
         bind "Ctrl l" "l" "Right" { MovePane "Right"; }
-     }
+    }
     scroll {
         bind "Esc" "q" { SwitchToMode "Normal"; }
         bind "e" { EditScrollback; SwitchToMode "Normal"; }
