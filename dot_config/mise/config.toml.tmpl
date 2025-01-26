@@ -10,7 +10,6 @@ deno = "2.1.3"
 python = "3.11"
 node = "22"
 awscli = "2"
-ghq = "latest"
 lazygit = "latest"
 lazydocker = "latest"
 actionlint = "latest"
@@ -23,7 +22,7 @@ fd = "latest"
 "ubi:veeso/termscp" = "latest"
 zoxide = "latest"
 {{ if or (eq .chezmoi.os "darwin") (ne .chezmoi.arch "arm64") }}
-neovim = "0.10.2"
+neovim = "0.10.3"
 ripgrep = "latest"
 {{ end }}
 

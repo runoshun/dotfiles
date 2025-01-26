@@ -65,10 +65,7 @@ _G._my_aider_terminal = ZellijTerminal:new(72, "vertical belowright", function(f
 end, true)
 
 local copilot_server = require("copilot_server")
-vim.api.nvim_create_user_command("StartCopilotProxy", copilot_server.start, {})
-vim.api.nvim_create_user_command("StopCopilotProxy", copilot_server.stop, {})
 vim.api.nvim_create_user_command("RestartCopilotProxy", copilot_server.restart, {})
-vim.api.nvim_create_user_command("GenerateAiderSettings", copilot_server.gen_aider_settings, {})
 
 vim.keymap.set(
 	{ "n", "t" },
@@ -85,7 +82,7 @@ vim.keymap.set(
 vim.keymap.set(
 	"n",
 	"<leader>aI",
-	"<cmd>lua _G._my_aider_terminal:toggle('all')<CR>",
+	"<cmd>lua _G._my_aider_terminal:open('all')<CR>",
 	{ noremap = true, silent = true, desc = "Toggle Aider Terminal" }
 )
 vim.keymap.set(
@@ -100,3 +97,43 @@ vim.keymap.set(
 	"<cmd>RestartCopilotProxy<CR>",
 	{ noremap = true, silent = true, desc = "Restart Copilot Proxy" }
 )
+
+-- workarounds for nvim-lspconfig
+
+-- 現在のファイルから上位ディレクトリをたどってファイルを探す関数
+local function find_file_upwards(filename)
+	-- 現在のディレクトリを取得
+	local current_dir = vim.fn.expand("%:p:h")
+
+	-- ディレクトリを上にたどる
+	while current_dir ~= "/" do -- Windowsの場合は 'C:\\' などのドライブルートも考慮する必要があります
+		local file_path = current_dir .. "/" .. filename
+		local f = io.open(file_path, "r")
+		if f ~= nil then
+			io.close(f)
+			return true
+		end
+		-- 親ディレクトリに移動
+		current_dir = vim.fn.fnamemodify(current_dir, ":h")
+	end
+	return false
+end
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+capabilities.workspace.didChangeWatchedFiles.dynamicRegistration = false
+require("lspconfig").spyglassmc_language_server.setup({
+	filetypes = { "mcfunction", "json" },
+	capabilities = capabilities,
+	on_attach = function(client, bufnr)
+		if not find_file_upwards("pack.mcmeta") then
+			vim.lsp.stop_client(client.id)
+		end
+	end,
+})
+
+-- mcfunction
+vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+	pattern = "*.mcfunction",
+	callback = function()
+		vim.bo.filetype = "mcfunction"
+	end,
+})
