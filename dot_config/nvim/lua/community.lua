@@ -29,6 +29,7 @@ return {
 	{ import = "astrocommunity.pack.markdown" },
 	{ import = "astrocommunity.pack.yaml" },
 	{ import = "astrocommunity.pack.mdx" },
+	{ import = "astrocommunity.pack.java" },
 
 	-- misc
 	{ import = "astrocommunity.editing-support.copilotchat-nvim" },
