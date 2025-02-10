@@ -1,9 +1,8 @@
 {
-  "4o-mini": "gpt-4o-mini",
   "groq-llama3.1-8b": "groq/llama-3.1-8b-instant",
   "groq-llama-3.3": "groq/llama-3.3-70b-versatile",
   "groq-llama3-70b": "groq/llama3-70b-8192",
-  "gemini-2.0-pro": "gemini-2.0-pro-exp-02-05",
-  "gemini-2.0-ft": "gemini-2.0-flash-thinking-exp-01-21",
+  "gemini": "gemini-2.0-pro-exp-02-05",
+  "gemini-ft": "gemini-2.0-flash-thinking-exp-01-21",
   "r1-free": "openrouter/deepseek/deepseek-r1:free"
 }
