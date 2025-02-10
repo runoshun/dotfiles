@@ -13,7 +13,7 @@ window-padding-x = 8,8
 clipboard-read = allow
 clipboard-write = allow
 
-theme = Hybrid
+theme = iceberg-dark
 
 quit-after-last-window-closed = true
 

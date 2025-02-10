@@ -2,6 +2,8 @@ export PATH=~/.local/share/mise/shims:$HOME/.local/bin:$HOME/bin:/opt/homebrew/b
 export EDITOR=nvim
 export BASH_SILENCE_DEPRECATION_WARNING=1
 
+export LLM_USER_PATH="$HOME/.config/io.datasette.llm"
+
 source ~/.bashrc
 
 # vim: set ft=bash :
