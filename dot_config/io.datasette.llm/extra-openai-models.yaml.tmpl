@@ -1,0 +1,11 @@
+{{ if eq .hosttype "personal" }}
+- model_id: gh-o1
+  model_name: o1
+  api_base: https://models.inference.ai.azure.com
+  api_key_name: github-models
+- model_id: gh-o3-mini
+  model_name: o3-mini
+  api_base: https://models.inference.ai.azure.com
+  api_key_name: github-models
+{{ else }}
+{{ end }}
