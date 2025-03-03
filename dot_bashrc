@@ -161,10 +161,20 @@ auto-marine-dev-instance() {
 
 portforwarding-daemon() {
     if [ $# -ne 1 ]; then
-        echo "usage: portforwarding-daemon <ssh-host>"
+        echo "usage: portforwarding-daemon <ssh-host>|logs|refresh"
         return 1
     fi
-    deno run -A https://raw.githubusercontent.com/runoshun/port-forwarding-daemon/refs/heads/main/main.ts start $1
+    if [ "$1" == "logs" ]; then
+        npx pm2 logs portforwarding-daemon
+        return
+    fi
+    module="https://raw.githubusercontent.com/runoshun/port-forwarding-daemon/refs/heads/main/main.ts"
+    if [ "$1" == "refresh" ]; then
+        deno cache --reload $module
+        return
+    fi
+    npx pm2 delete portforwarding-daemon
+    npx pm2 start --name portforwarding-daemon "deno run -A $module start $1"
 }
 
 attach-dev-container() {
