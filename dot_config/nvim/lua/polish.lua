@@ -100,35 +100,35 @@ vim.keymap.set(
 
 -- workarounds for nvim-lspconfig
 
--- 現在のファイルから上位ディレクトリをたどってファイルを探す関数
-local function find_file_upwards(filename)
-	-- 現在のディレクトリを取得
-	local current_dir = vim.fn.expand("%:p:h")
-
-	-- ディレクトリを上にたどる
-	while current_dir ~= "/" do -- Windowsの場合は 'C:\\' などのドライブルートも考慮する必要があります
-		local file_path = current_dir .. "/" .. filename
-		local f = io.open(file_path, "r")
-		if f ~= nil then
-			io.close(f)
-			return true
-		end
-		-- 親ディレクトリに移動
-		current_dir = vim.fn.fnamemodify(current_dir, ":h")
-	end
-	return false
-end
-local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities.workspace.didChangeWatchedFiles.dynamicRegistration = false
-require("lspconfig").spyglassmc_language_server.setup({
-	filetypes = { "mcfunction", "json" },
-	capabilities = capabilities,
-	on_attach = function(client, bufnr)
-		if not find_file_upwards("pack.mcmeta") then
-			vim.lsp.stop_client(client.id)
-		end
-	end,
-})
+-- -- 現在のファイルから上位ディレクトリをたどってファイルを探す関数
+-- local function find_file_upwards(filename)
+-- 	-- 現在のディレクトリを取得
+-- 	local current_dir = vim.fn.expand("%:p:h")
+--
+-- 	-- ディレクトリを上にたどる
+-- 	while current_dir ~= "/" do -- Windowsの場合は 'C:\\' などのドライブルートも考慮する必要があります
+-- 		local file_path = current_dir .. "/" .. filename
+-- 		local f = io.open(file_path, "r")
+-- 		if f ~= nil then
+-- 			io.close(f)
+-- 			return true
+-- 		end
+-- 		-- 親ディレクトリに移動
+-- 		current_dir = vim.fn.fnamemodify(current_dir, ":h")
+-- 	end
+-- 	return false
+-- end
+-- local capabilities = vim.lsp.protocol.make_client_capabilities()
+-- capabilities.workspace.didChangeWatchedFiles.dynamicRegistration = false
+-- require("lspconfig").spyglassmc_language_server.setup({
+-- 	filetypes = { "mcfunction", "json" },
+-- 	capabilities = capabilities,
+-- 	on_attach = function(client, bufnr)
+-- 		if not find_file_upwards("pack.mcmeta") then
+-- 			vim.lsp.stop_client(client.id)
+-- 		end
+-- 	end,
+-- })
 
 -- mcfunction
 vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
