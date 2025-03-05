@@ -17,7 +17,7 @@ return {
 	},
 	{
 		"github/copilot.vim",
-		event = "BufEnter",
+		event = "InsertEnter",
 		config = function()
 			vim.g.copilot_filetypes = {
 				yaml = true,
@@ -42,4 +42,26 @@ return {
 	-- 	},
 	-- 	config = true,
 	-- },
+	{
+		"olimorris/codecompanion.nvim",
+		event = "BufEnter",
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+			"nvim-treesitter/nvim-treesitter",
+			-- "hrsh7th/nvim-cmp",                   -- Optional: For using slash commands and variables in the chat buffer
+			-- "nvim-telescope/telescope.nvim",      -- Optional: For using slash commands
+			-- { "stevearc/dressing.nvim", opts = {} }, -- Optional: Improves `vim.ui.select`
+		},
+		config = true,
+		opts = {
+			strategies = {
+				chat = {
+					adapter = "copilot",
+				},
+				inline = {
+					adapter = "copilot",
+				},
+			},
+		},
+	},
 }
