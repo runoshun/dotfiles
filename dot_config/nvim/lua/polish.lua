@@ -36,10 +36,11 @@ vim.keymap.set(
 
 -- キーマップ
 local MyTerminal = require("my_toggle_terminal")
+local ZellijTerminal = require("zellij_new_pane")
+
 _G._my_rightbelow_terminal = MyTerminal:new(15, "belowright")
 
-local ZellijTerminal = require("zellij_new_pane")
-_G._my_aider_terminal = ZellijTerminal:new(72, "vertical belowright", function(files, watch)
+local aider_open = function(files, watch)
 	local file_args = {}
 	local bufnrs
 	if files == "all" then
@@ -48,7 +49,6 @@ _G._my_aider_terminal = ZellijTerminal:new(72, "vertical belowright", function(f
 		bufnrs = { vim.api.nvim_get_current_buf() }
 	end
 
-	print(vim.inspect(bufnrs))
 	local cwd = vim.fn.getcwd()
 	for _, bufnr in ipairs(bufnrs) do
 		if vim.api.nvim_buf_is_loaded(bufnr) then
@@ -62,7 +62,12 @@ _G._my_aider_terminal = ZellijTerminal:new(72, "vertical belowright", function(f
 	end
 
 	return "aider --env-file ~/.aider.env " .. table.concat(file_args, " ")
-end, true)
+end
+if vim.env.ZELLIJ ~= nil then
+	_G._my_aider_terminal = ZellijTerminal:new(72, "vertical belowright", aider_open, true)
+else
+	_G._my_aider_terminal = MyTerminal:new(72, "vertical belowright", aider_open, true)
+end
 
 local copilot_server = require("copilot_server")
 vim.api.nvim_create_user_command("RestartCopilotProxy", copilot_server.restart, {})
