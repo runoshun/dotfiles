@@ -103,12 +103,10 @@
 				);
 
 				// グローバルイベントリスナーの設定
-				document.addEventListener("mousemove", handleMouseMove);
-				document.addEventListener("mouseup", handleMouseUp);
 			};
 
 			const handleMouseMove = (e) => {
-				console.log("handleMove");
+				console.log("handleMouseMove");
 				if (!isResizing) return;
 				e.preventDefault();
 				const width = `${startWidth + e.clientX - startX}px`;
@@ -119,10 +117,6 @@
 				if (!isResizing) return;
 
 				isResizing = false;
-
-				// グローバルイベントリスナーの削除
-				document.removeEventListener("mousemove", handleMouseMove);
-				document.removeEventListener("mouseup", handleMouseUp);
 			};
 
 			// resizer要素のスタイルも強化
@@ -133,6 +127,8 @@
 			});
 
 			resizer.addEventListener("mousedown", handleMouseDown);
+			window.addEventListener("mousemove", handleMouseMove);
+			window.addEventListener("mouseup", handleMouseUp);
 		}
 
 		function updateElementsOnResize(width) {
