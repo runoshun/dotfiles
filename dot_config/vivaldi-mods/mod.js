@@ -25,13 +25,64 @@
 
 			const fixedStyle = document.createElement("style");
 			fixedStyle.textContent = `
-      #main > div.mainbar > div > div[role="toolbar"] {
-        min-height: 42px !important;
-      }`;
+        #main > div.mainbar > div > div[role="toolbar"] {
+          min-height: 42px !important;
+        }`;
 			document.head.appendChild(fixedStyle);
+
+			// Create a resizer element
+			const resizer = document.createElement("div");
+			resizer.id = "vivaldi-webview-resizer";
+			resizer.style.width = "5px";
+			resizer.style.cursor = "col-resize";
+			resizer.style.position = "absolute";
+			resizer.style.top = "0";
+			resizer.style.left = webviewWidth;
+			resizer.style.bottom = "0";
+			resizer.style.zIndex = "1000";
+			document.body.appendChild(resizer);
 
 			document.body.prepend(webview);
 			updateWebviewVisibility(true);
+
+			// Add event listeners for resizing
+			let isResizing = false;
+			let startX = 0;
+			let startWidth = 0;
+
+			resizer.addEventListener("mousedown", function (e) {
+				console.log("mousedown");
+				if (isResizing) return;
+				isResizing = true;
+				startX = e.clientX;
+				startWidth = parseInt(
+					document.defaultView.getComputedStyle(webview).width,
+					10,
+				);
+			});
+			document.addEventListener("mousemove", doDrag, false);
+			document.addEventListener("mouseup", stopDrag, false);
+
+			function doDrag(e) {
+				console.log("doDrag");
+				if (!isResizing) return;
+				const width = `${startWidth + e.clientX - startX}px`;
+				e.preventDefault();
+
+				webview.style.width = width;
+				styleElement.textContent = `
+            #app {
+              margin-left: ${width} !important;
+              transition: none;
+            }
+          `;
+				resizer.style.left = width;
+			}
+
+			function stopDrag() {
+				console.log("stopDrag");
+				isResizing = false;
+			}
 		}
 
 		// Function to update webview and app styles based on visibility
