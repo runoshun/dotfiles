@@ -61,7 +61,7 @@ local aider_open = function(files, watch)
 		end
 	end
 
-	return "aider --env-file ~/.aider.env " .. table.concat(file_args, " ")
+	return "aider " .. table.concat(file_args, " ")
 end
 if vim.env.ZELLIJ ~= nil then
 	_G._my_aider_terminal = ZellijTerminal:new(72, "vertical belowright", aider_open, true)
