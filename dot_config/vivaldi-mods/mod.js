@@ -93,42 +93,46 @@
 			let startX = 0;
 			let startWidth = 0;
 
-			const handleMouseDown = (e) => {
-				e.preventDefault(); // イベントのデフォルト動作を防止
+			const handlePointerDown = (e) => {
+				e.preventDefault();
 				isResizing = true;
 				startX = e.clientX;
 				startWidth = parseInt(
 					document.defaultView.getComputedStyle(webview).width,
 					10,
 				);
-
-				// グローバルイベントリスナーの設定
+				
+				// ポインタをキャプチャ
+				resizer.setPointerCapture(e.pointerId);
 			};
 
-			const handleMouseMove = (e) => {
-				console.log("handleMouseMove");
+			const handlePointerMove = (e) => {
 				if (!isResizing) return;
 				e.preventDefault();
 				const width = `${startWidth + e.clientX - startX}px`;
 				updateElementsOnResize(width);
 			};
 
-			const handleMouseUp = (e) => {
+			const handlePointerUp = (e) => {
 				if (!isResizing) return;
-
 				isResizing = false;
+				
+				// ポインタキャプチャを解放
+				resizer.releasePointerCapture(e.pointerId);
 			};
 
-			// resizer要素のスタイルも強化
+			// スタイル
 			Object.assign(resizer.style, {
 				zIndex: "9999",
 				pointerEvents: "all",
-				position: "fixed", // absoluteからfixedに変更して確実に表示されるように
+				position: "fixed", 
+				touchAction: "none" // タッチデバイス用
 			});
 
-			resizer.addEventListener("mousedown", handleMouseDown);
-			window.addEventListener("mousemove", handleMouseMove);
-			window.addEventListener("mouseup", handleMouseUp);
+			resizer.addEventListener("pointerdown", handlePointerDown);
+			resizer.addEventListener("pointermove", handlePointerMove);
+			resizer.addEventListener("pointerup", handlePointerUp);
+			resizer.addEventListener("pointercancel", handlePointerUp);
 		}
 
 		function updateElementsOnResize(width) {
