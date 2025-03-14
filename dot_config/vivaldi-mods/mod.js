@@ -3,7 +3,7 @@
 	const STYLES = {
 		WEBVIEW: {
 			DEFAULT_WIDTH: "250px",
-			HEIGHT: "calc(100% - 50px)",
+			HEIGHT: "calc(100% - 40px)",
 			MARGIN_TOP: "40px",
 		},
 		RESIZER: {
@@ -101,7 +101,7 @@
 					document.defaultView.getComputedStyle(webview).width,
 					10,
 				);
-				
+
 				// ポインタをキャプチャ
 				resizer.setPointerCapture(e.pointerId);
 			};
@@ -116,7 +116,7 @@
 			const handlePointerUp = (e) => {
 				if (!isResizing) return;
 				isResizing = false;
-				
+
 				// ポインタキャプチャを解放
 				resizer.releasePointerCapture(e.pointerId);
 			};
@@ -125,8 +125,8 @@
 			Object.assign(resizer.style, {
 				zIndex: "9999",
 				pointerEvents: "all",
-				position: "fixed", 
-				touchAction: "none" // タッチデバイス用
+				position: "fixed",
+				touchAction: "none", // タッチデバイス用
 			});
 
 			resizer.addEventListener("pointerdown", handlePointerDown);
@@ -139,7 +139,7 @@
 			webview.style.width = width;
 			styleElement.textContent = `
         #app {
-          margin-left: ${width} !important;
+          margin-left: calc(${width} + 2px) !important;
           transition: none;
         }
       `;
