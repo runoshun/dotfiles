@@ -94,13 +94,17 @@
       let startWidth = 0;
 
       const handleMouseDown = (e) => {
-        if (isResizing) return;
+        e.preventDefault(); // イベントのデフォルト動作を防止
         isResizing = true;
         startX = e.clientX;
         startWidth = parseInt(
           document.defaultView.getComputedStyle(webview).width,
           10
         );
+
+        // グローバルイベントリスナーの設定
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
       };
 
       const handleMouseMove = (e) => {
@@ -110,13 +114,24 @@
         updateElementsOnResize(width);
       };
 
-      const handleMouseUp = () => {
+      const handleMouseUp = (e) => {
+        if (!isResizing) return;
+        
         isResizing = false;
+        
+        // グローバルイベントリスナーの削除
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
       };
 
+      // resizer要素のスタイルも強化
+      Object.assign(resizer.style, {
+        zIndex: '9999',
+        pointerEvents: 'all',
+        position: 'fixed' // absoluteからfixedに変更して確実に表示されるように
+      });
+
       resizer.addEventListener('mousedown', handleMouseDown);
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
     }
 
     function updateElementsOnResize(width) {
