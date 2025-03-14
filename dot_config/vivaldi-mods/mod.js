@@ -1,214 +1,215 @@
 (function () {
-  // スタイル定数
-  const STYLES = {
-    WEBVIEW: {
-      DEFAULT_WIDTH: '250px',
-      HEIGHT: 'calc(100% - 50px)',
-      MARGIN_TOP: '40px',
-    },
-    RESIZER: {
-      WIDTH: '5px',
-      CURSOR: 'col-resize',
-      Z_INDEX: '1000',
-    },
-    TRANSITIONS: {
-      MARGIN: 'margin-left 0.3s ease',
-    },
-  };
+	// スタイル定数
+	const STYLES = {
+		WEBVIEW: {
+			DEFAULT_WIDTH: "250px",
+			HEIGHT: "calc(100% - 50px)",
+			MARGIN_TOP: "40px",
+		},
+		RESIZER: {
+			WIDTH: "5px",
+			CURSOR: "col-resize",
+			Z_INDEX: "1000",
+		},
+		TRANSITIONS: {
+			MARGIN: "margin-left 0.3s ease",
+		},
+	};
 
-  // ユーティリティ関数
-  const createElementWithStyles = (tag, id, styles) => {
-    const element = document.createElement(tag);
-    element.id = id;
-    Object.assign(element.style, styles);
-    return element;
-  };
+	// ユーティリティ関数
+	const createElementWithStyles = (tag, id, styles) => {
+		const element = document.createElement(tag);
+		element.id = id;
+		Object.assign(element.style, styles);
+		return element;
+	};
 
-  const setWebviewVisibilityStyles = (visible, width) => {
-    return {
-      webviewStyles: {
-        width: visible ? width : '0px',
-        display: visible ? 'block' : 'none',
-      },
-      appStyles: `
+	const setWebviewVisibilityStyles = (visible, width) => {
+		return {
+			webviewStyles: {
+				width: visible ? width : "0px",
+				display: visible ? "block" : "none",
+			},
+			appStyles: `
         #app {
-          margin-left: ${visible ? width : '0px'} !important;
+          margin-left: ${visible ? width : "0px"} !important;
           transition: ${STYLES.TRANSITIONS.MARGIN};
         }
       `,
-    };
-  };
+		};
+	};
 
-  document.addEventListener('DOMContentLoaded', function () {
-    let isWebviewVisible = true;
-    let webview, styleElement, resizer;
-    let isResizing = false;
+	document.addEventListener("DOMContentLoaded", function () {
+		let isWebviewVisible = true;
+		let webview, styleElement, resizer;
+		let isResizing = false;
 
-    function initWebview() {
-      // Webview作成
-      webview = createElementWithStyles('webview', 'vivaldi-sidebar-webview', {
-        height: STYLES.WEBVIEW.HEIGHT,
-        marginTop: STYLES.WEBVIEW.MARGIN_TOP,
-        width: STYLES.WEBVIEW.DEFAULT_WIDTH,
-      });
-      webview.setAttribute(
-        'src',
-        'chrome-extension://chejfhdknideagdnddjpgamkchefjhoi/sidepanel.html'
-      );
+		function initWebview() {
+			// Webview作成
+			webview = createElementWithStyles("webview", "vivaldi-sidebar-webview", {
+				height: STYLES.WEBVIEW.HEIGHT,
+				marginTop: STYLES.WEBVIEW.MARGIN_TOP,
+				width: STYLES.WEBVIEW.DEFAULT_WIDTH,
+			});
+			webview.setAttribute(
+				"src",
+				"chrome-extension://chejfhdknideagdnddjpgamkchefjhoi/sidepanel.html",
+			);
 
-      // スタイル要素作成
-      styleElement = document.createElement('style');
-      styleElement.id = 'vivaldi-webview-styles';
-      
-      // 固定スタイル追加
-      const fixedStyle = document.createElement('style');
-      fixedStyle.textContent = `
+			// スタイル要素作成
+			styleElement = document.createElement("style");
+			styleElement.id = "vivaldi-webview-styles";
+
+			// 固定スタイル追加
+			const fixedStyle = document.createElement("style");
+			fixedStyle.textContent = `
         #main > div.mainbar > div > div[role="toolbar"] {
           min-height: 42px !important;
         }
       `;
 
-      // Resizer作成
-      resizer = createElementWithStyles('div', 'vivaldi-webview-resizer', {
-        width: STYLES.RESIZER.WIDTH,
-        cursor: STYLES.RESIZER.CURSOR,
-        position: 'absolute',
-        top: '0',
-        left: STYLES.WEBVIEW.DEFAULT_WIDTH,
-        bottom: '0',
-        zIndex: STYLES.RESIZER.Z_INDEX,
-      });
+			// Resizer作成
+			resizer = createElementWithStyles("div", "vivaldi-webview-resizer", {
+				width: STYLES.RESIZER.WIDTH,
+				cursor: STYLES.RESIZER.CURSOR,
+				position: "absolute",
+				top: "0",
+				left: STYLES.WEBVIEW.DEFAULT_WIDTH,
+				bottom: "0",
+				zIndex: STYLES.RESIZER.Z_INDEX,
+			});
 
-      // DOM追加
-      document.head.appendChild(styleElement);
-      document.head.appendChild(fixedStyle);
-      document.body.prepend(webview);
-      document.body.appendChild(resizer);
+			// DOM追加
+			document.head.appendChild(styleElement);
+			document.head.appendChild(fixedStyle);
+			document.body.prepend(webview);
+			document.body.appendChild(resizer);
 
-      setupResizeHandlers();
-      updateWebviewVisibility(true);
-    }
+			setupResizeHandlers();
+			updateWebviewVisibility(true);
+		}
 
-    function setupResizeHandlers() {
-      let startX = 0;
-      let startWidth = 0;
+		function setupResizeHandlers() {
+			let startX = 0;
+			let startWidth = 0;
 
-      const handleMouseDown = (e) => {
-        e.preventDefault(); // イベントのデフォルト動作を防止
-        isResizing = true;
-        startX = e.clientX;
-        startWidth = parseInt(
-          document.defaultView.getComputedStyle(webview).width,
-          10
-        );
+			const handleMouseDown = (e) => {
+				e.preventDefault(); // イベントのデフォルト動作を防止
+				isResizing = true;
+				startX = e.clientX;
+				startWidth = parseInt(
+					document.defaultView.getComputedStyle(webview).width,
+					10,
+				);
 
-        // グローバルイベントリスナーの設定
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
-      };
+				// グローバルイベントリスナーの設定
+				document.addEventListener("mousemove", handleMouseMove);
+				document.addEventListener("mouseup", handleMouseUp);
+			};
 
-      const handleMouseMove = (e) => {
-        if (!isResizing) return;
-        e.preventDefault();
-        const width = `${startWidth + e.clientX - startX}px`;
-        updateElementsOnResize(width);
-      };
+			const handleMouseMove = (e) => {
+				console.log("handleMove");
+				if (!isResizing) return;
+				e.preventDefault();
+				const width = `${startWidth + e.clientX - startX}px`;
+				updateElementsOnResize(width);
+			};
 
-      const handleMouseUp = (e) => {
-        if (!isResizing) return;
-        
-        isResizing = false;
-        
-        // グローバルイベントリスナーの削除
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
+			const handleMouseUp = (e) => {
+				if (!isResizing) return;
 
-      // resizer要素のスタイルも強化
-      Object.assign(resizer.style, {
-        zIndex: '9999',
-        pointerEvents: 'all',
-        position: 'fixed' // absoluteからfixedに変更して確実に表示されるように
-      });
+				isResizing = false;
 
-      resizer.addEventListener('mousedown', handleMouseDown);
-    }
+				// グローバルイベントリスナーの削除
+				document.removeEventListener("mousemove", handleMouseMove);
+				document.removeEventListener("mouseup", handleMouseUp);
+			};
 
-    function updateElementsOnResize(width) {
-      webview.style.width = width;
-      styleElement.textContent = `
+			// resizer要素のスタイルも強化
+			Object.assign(resizer.style, {
+				zIndex: "9999",
+				pointerEvents: "all",
+				position: "fixed", // absoluteからfixedに変更して確実に表示されるように
+			});
+
+			resizer.addEventListener("mousedown", handleMouseDown);
+		}
+
+		function updateElementsOnResize(width) {
+			webview.style.width = width;
+			styleElement.textContent = `
         #app {
           margin-left: ${width} !important;
           transition: none;
         }
       `;
-      resizer.style.left = width;
-    }
+			resizer.style.left = width;
+		}
 
-    function updateWebviewVisibility(visible) {
-      isWebviewVisible = visible;
-      const { webviewStyles, appStyles } = setWebviewVisibilityStyles(
-        visible,
-        STYLES.WEBVIEW.DEFAULT_WIDTH
-      );
-      Object.assign(webview.style, webviewStyles);
-      styleElement.textContent = appStyles;
-    }
+		function updateWebviewVisibility(visible) {
+			isWebviewVisible = visible;
+			const { webviewStyles, appStyles } = setWebviewVisibilityStyles(
+				visible,
+				STYLES.WEBVIEW.DEFAULT_WIDTH,
+			);
+			Object.assign(webview.style, webviewStyles);
+			styleElement.textContent = appStyles;
+		}
 
-    function setupPanelsContainerObserver() {
-      let panelFound = false;
+		function setupPanelsContainerObserver() {
+			let panelFound = false;
 
-      const checkPanelsWidth = (panelsContainer) => {
-        const width = parseInt(panelsContainer.style.width) || 0;
-        const isVisible = panelsContainer.style.display !== 'none' && width > 1;
-        
-        if ((!isVisible || width === 0) && isWebviewVisible) {
-          updateWebviewVisibility(false);
-        } else if (isVisible && !isWebviewVisible) {
-          updateWebviewVisibility(true);
-        }
-      };
+			const checkPanelsWidth = (panelsContainer) => {
+				const width = parseInt(panelsContainer.style.width) || 0;
+				const isVisible = panelsContainer.style.display !== "none" && width > 1;
 
-      const findPanelsContainer = setInterval(() => {
-        const panelsContainer = document.getElementById('panels-container');
-        if (!panelsContainer) return;
+				if ((!isVisible || width === 0) && isWebviewVisible) {
+					updateWebviewVisibility(false);
+				} else if (isVisible && !isWebviewVisible) {
+					updateWebviewVisibility(true);
+				}
+			};
 
-        clearInterval(findPanelsContainer);
-        panelFound = true;
-        initWebview();
+			const findPanelsContainer = setInterval(() => {
+				const panelsContainer = document.getElementById("panels-container");
+				if (!panelsContainer) return;
 
-        checkPanelsWidth(panelsContainer);
+				clearInterval(findPanelsContainer);
+				panelFound = true;
+				initWebview();
 
-        const observer = new MutationObserver((mutations) => {
-          mutations.forEach((mutation) => {
-            if (mutation.attributeName === 'style') {
-              checkPanelsWidth(panelsContainer);
-            }
-          });
-        });
+				checkPanelsWidth(panelsContainer);
 
-        const observerConfig = {
-          attributes: true,
-          attributeFilter: ['style', 'class'],
-        };
+				const observer = new MutationObserver((mutations) => {
+					mutations.forEach((mutation) => {
+						if (mutation.attributeName === "style") {
+							checkPanelsWidth(panelsContainer);
+						}
+					});
+				});
 
-        observer.observe(panelsContainer, observerConfig);
-        if (panelsContainer.parentElement) {
-          observer.observe(panelsContainer.parentElement, observerConfig);
-        }
-      }, 500);
+				const observerConfig = {
+					attributes: true,
+					attributeFilter: ["style", "class"],
+				};
 
-      setTimeout(() => {
-        if (findPanelsContainer) {
-          clearInterval(findPanelsContainer);
-          if (!panelFound) {
-            console.log('Could not find #panels-container within timeout');
-          }
-        }
-      }, 30000);
-    }
+				observer.observe(panelsContainer, observerConfig);
+				if (panelsContainer.parentElement) {
+					observer.observe(panelsContainer.parentElement, observerConfig);
+				}
+			}, 500);
 
-    setupPanelsContainerObserver();
-    console.log('Vivaldi mod: side-webview loaded');
-  });
+			setTimeout(() => {
+				if (findPanelsContainer) {
+					clearInterval(findPanelsContainer);
+					if (!panelFound) {
+						console.log("Could not find #panels-container within timeout");
+					}
+				}
+			}, 30000);
+		}
+
+		setupPanelsContainerObserver();
+		console.log("Vivaldi mod: side-webview loaded");
+	});
 })();
