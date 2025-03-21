@@ -9,9 +9,9 @@ local window_move_plugin = (function()
       lazy = true,
       event = "VeryLazy",
       keys = {
-        { "<c-h>", "<cmd>ZellijNavigateLeftTab<cr>", desc = "navigate left or tab", mode = "n" },
-        { "<c-j>", "<cmd>ZellijNavigateDown<cr>", desc = "navigate down", mode = "n" },
-        { "<c-k>", "<cmd>ZellijNavigateUp<cr>", desc = "navigate up", mode = "n" },
+        { "<c-h>", "<cmd>ZellijNavigateLeftTab<cr>",  desc = "navigate left or tab",  mode = "n" },
+        { "<c-j>", "<cmd>ZellijNavigateDown<cr>",     desc = "navigate down",         mode = "n" },
+        { "<c-k>", "<cmd>ZellijNavigateUp<cr>",       desc = "navigate up",           mode = "n" },
         { "<c-l>", "<cmd>ZellijNavigateRightTab<cr>", desc = "navigate right or tab", mode = "n" },
       },
       opts = {},
@@ -30,16 +30,16 @@ local window_move_plugin = (function()
         "TmuxNavigatorProcessList",
       },
       keys = {
-        { "<C-h>", "<cmd>TmuxNavigateLeft<cr>", desc = "navigate left", mode = "n" },
-        { "<C-j>", "<cmd>TmuxNavigateDown<cr>", desc = "navigate down", mode = "n" },
-        { "<C-k>", "<cmd>TmuxNavigateUp<cr>", desc = "navigate up", mode = "n" },
-        { "<C-l>", "<cmd>TmuxNavigateRight<cr>", desc = "navigate right", mode = "n" },
-        { "<C-\\>", "<cmd>TmuxNavigatePrevious<cr>", desc = "navigate previous", mode = "n" },
+        { "<C-h>",  "<cmd>TmuxNavigateLeft<cr>",                desc = "navigate left",     mode = "n" },
+        { "<C-j>",  "<cmd>TmuxNavigateDown<cr>",                desc = "navigate down",     mode = "n" },
+        { "<C-k>",  "<cmd>TmuxNavigateUp<cr>",                  desc = "navigate up",       mode = "n" },
+        { "<C-l>",  "<cmd>TmuxNavigateRight<cr>",               desc = "navigate right",    mode = "n" },
+        { "<C-\\>", "<cmd>TmuxNavigatePrevious<cr>",            desc = "navigate previous", mode = "n" },
         -- terminal
-        { "<C-h>", "<C-\\><C-N><cmd>TmuxNavigateLeft<cr>", desc = "navigate left", mode = "t" },
-        { "<C-j>", "<C-\\><C-N><cmd>TmuxNavigateDown<cr>", desc = "navigate down", mode = "t" },
-        { "<C-k>", "<C-\\><C-N><cmd>TmuxNavigateUp<cr>", desc = "navigate up", mode = "t" },
-        { "<C-l>", "<C-\\><C-N><cmd>TmuxNavigateRight<cr>", desc = "navigate right", mode = "t" },
+        { "<C-h>",  "<C-\\><C-N><cmd>TmuxNavigateLeft<cr>",     desc = "navigate left",     mode = "t" },
+        { "<C-j>",  "<C-\\><C-N><cmd>TmuxNavigateDown<cr>",     desc = "navigate down",     mode = "t" },
+        { "<C-k>",  "<C-\\><C-N><cmd>TmuxNavigateUp<cr>",       desc = "navigate up",       mode = "t" },
+        { "<C-l>",  "<C-\\><C-N><cmd>TmuxNavigateRight<cr>",    desc = "navigate right",    mode = "t" },
         { "<C-\\>", "<C-\\><C-N><cmd>TmuxNavigatePrevious<cr>", desc = "navigate previous", mode = "t" },
       },
     }
@@ -78,6 +78,13 @@ return {
   },
   {
     "neovim/nvim-lspconfig",
+  },
+  {
+    "williamboman/mason-lspconfig.nvim",
+    event = "VeryLazy",
+    opts = {
+      ensure_installed = { "lua_ls" }
+    }
   },
   --- }}}
 
@@ -156,7 +163,7 @@ return {
       words = { enabled = true },
     },
     keys = {
-      { "<leader>..", function() require("snacks").scratch() end, desc = "Toggle Scratch Buffer" },
+      { "<leader>..", function() require("snacks").scratch() end,        desc = "Toggle Scratch Buffer" },
       { "<leader>.S", function() require("snacks").scratch.select() end, desc = "Select Scratch Buffer" },
     },
   },
@@ -301,7 +308,7 @@ return {
         show_help = false,
         window = {
           layout = "vertical",
-          width = 74, -- absolute width in columns
+          width = 74,               -- absolute width in columns
           height = vim.o.lines - 4, -- absolute height in rows, subtract for command line and status line
         },
         mappings = {
@@ -364,16 +371,16 @@ return {
       "AiderHealth",
     },
     keys = {
-      { "<leader>ai", "<cmd>AiderTerminalToggle<cr>", desc = "Open Aider" },
-      { "<leader>as", "<cmd>AiderTerminalSend<cr>", desc = "Send to Aider", mode = { "n", "v" } },
-      { "<leader>ac", "<cmd>AiderQuickSendCommand<cr>", desc = "Send Command To Aider" },
-      { "<leader>ab", "<cmd>AiderQuickSendBuffer<cr>", desc = "Send Buffer To Aider" },
-      { "<leader>a+", "<cmd>AiderQuickAddFile<cr>", desc = "Add File to Aider" },
-      { "<leader>a-", "<cmd>AiderQuickDropFile<cr>", desc = "Drop File from Aider" },
+      { "<leader>ai", "<cmd>AiderTerminalToggle<cr>",    desc = "Open Aider" },
+      { "<leader>as", "<cmd>AiderTerminalSend<cr>",      desc = "Send to Aider",                  mode = { "n", "v" } },
+      { "<leader>ac", "<cmd>AiderQuickSendCommand<cr>",  desc = "Send Command To Aider" },
+      { "<leader>ab", "<cmd>AiderQuickSendBuffer<cr>",   desc = "Send Buffer To Aider" },
+      { "<leader>a+", "<cmd>AiderQuickAddFile<cr>",      desc = "Add File to Aider" },
+      { "<leader>a-", "<cmd>AiderQuickDropFile<cr>",     desc = "Drop File from Aider" },
       { "<leader>ar", "<cmd>AiderQuickReadOnlyFile<cr>", desc = "Add File as Read-Only" },
       -- Example nvim-tree.lua integration if needed
-      { "<leader>a+", "<cmd>AiderTreeAddFile<cr>", desc = "Add File from Tree to Aider", ft = "NvimTree" },
-      { "<leader>a-", "<cmd>AiderTreeDropFile<cr>", desc = "Drop File from Tree from Aider", ft = "NvimTree" },
+      { "<leader>a+", "<cmd>AiderTreeAddFile<cr>",       desc = "Add File from Tree to Aider",    ft = "NvimTree" },
+      { "<leader>a-", "<cmd>AiderTreeDropFile<cr>",      desc = "Drop File from Tree from Aider", ft = "NvimTree" },
     },
     dependencies = {
       "folke/snacks.nvim",
@@ -410,7 +417,7 @@ return {
         },
       },
       cmdline = {
-        enabled = true, -- enables the Noice cmdline UI
+        enabled = true,         -- enables the Noice cmdline UI
         view = "cmdline_popup", -- view for rendering the cmdline. Change to `cmdline` to get a classic cmdline at the bottom
       },
       popupmenu = {
@@ -440,11 +447,11 @@ return {
         checker = true,
       },
       presets = {
-        bottom_search = false, -- use a classic bottom cmdline for search
-        command_palette = false, -- position the cmdline and popupmenu together
+        bottom_search = false,         -- use a classic bottom cmdline for search
+        command_palette = false,       -- position the cmdline and popupmenu together
         long_message_to_split = false, -- long messages will be sent to a split
-        inc_rename = false, -- enables an input dialog for inc-rename.nvim
-        lsp_doc_border = false, -- add a border to hover docs and signature help
+        inc_rename = false,            -- enables an input dialog for inc-rename.nvim
+        lsp_doc_border = false,        -- add a border to hover docs and signature help
       },
     },
     dependencies = {

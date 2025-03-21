@@ -53,6 +53,7 @@
 			});
 			webview.setAttribute(
 				"src",
+				//"chrome-extension://kcoaboamaljjopcppblpdnhcmaddanig/sidepanel.html",
 				"chrome-extension://chejfhdknideagdnddjpgamkchefjhoi/sidepanel.html",
 			);
 
