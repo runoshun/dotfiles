@@ -17,9 +17,11 @@ bat = "latest"
 fd = "latest"
 "pipx:awsume" = "latest"
 "pipx:aider-chat" = "latest"
+"pipx:euporie" = "latest"
 "ubi:sigoden/aichat" = "latest"
-{{ if or (eq .chezmoi.os "darwin") (ne .chezmoi.arch "arm64") }}
 neovim = "0.10.4"
+
+{{ if or (eq .chezmoi.os "darwin") (ne .chezmoi.arch "arm64") }}
 ripgrep = "latest"
 "ubi:veeso/termscp" = "latest"
 {{ end }}
