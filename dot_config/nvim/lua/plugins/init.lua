@@ -50,7 +50,19 @@ end)() -- }}}
 return {
 	--- {{{ lsp
 	{
+		"neovim/nvim-lspconfig",
+		config = function() end, -- disable default setup
+	},
+	{
+		"williamboman/mason-lspconfig.nvim",
+		event = "VeryLazy",
+		opts = {
+			ensure_installed = { "lua_ls" },
+		},
+	},
+	{
 		"folke/neoconf.nvim",
+		lazy = false,
 		config = function()
 			require("neoconf").setup({})
 			require("lspconfig").lua_ls.setup({
@@ -74,9 +86,6 @@ return {
 				},
 			})
 		end,
-	},
-	{
-		"neovim/nvim-lspconfig",
 	},
 	--- }}}
 
@@ -262,7 +271,7 @@ return {
 			{ "nvim-telescope/telescope.nvim" },
 		},
 		keys = {
-			{ "<leader>ac", "<cmd>CopilotChat<cr>", { silent = true, desc = "Open Copilot Chat" } },
+			{ "<leader>aa", "<cmd>CopilotChat<cr>", { silent = true, desc = "Open Copilot Chat" } },
 		},
 		config = function()
 			-- Disable the enable_claude function
@@ -487,21 +496,17 @@ return {
 	},
 	--- }}}
 
-	--- {{{ sniprun
+	--- {{{ nvim-treesitter-textsubjects
 	{
-		"michaelb/sniprun",
-		kranch = "master",
-		build = "sh install.sh",
-		cmd = {
-			"SnipRun",
-		},
-		keys = {
-			{ "<leader>r", "<Plug>SnipRun", desc = "Run Snippet" },
-		},
+		"RRethy/nvim-treesitter-textsubjects",
+		event = "BufEnter",
 		config = function()
-			require("sniprun").setup({
-				display = {
-					"VirtualText",
+			require("nvim-treesitter-textsubjects").configure({
+				prev_selection = ",",
+				keymaps = {
+					["."] = "textsubjects-smart",
+					[";"] = "textsubjects-container-outer",
+					["i;"] = "textsubjects-container-inner",
 				},
 			})
 		end,
