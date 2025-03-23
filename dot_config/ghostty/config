@@ -2,6 +2,7 @@ font-family = "UDEV Gothic NF"
 font-size = 13.5
 font-feature = -dlig
 
+title = "Main"
 command = "/opt/homebrew/bin/bash -l"
 shell-integration = bash
 
