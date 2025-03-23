@@ -1,6 +1,60 @@
 --- @type LazySpec
 return {
   {
+    "epwalsh/obsidian.nvim",
+    version = "*", -- recommended, use latest release instead of latest commit
+    lazy = true,
+    event = "VeryLazy",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+    },
+    keys = {
+      -- Note creation and management
+      { "<leader>oo",  "<cmd>ObsidianNew<cr>",             desc = "Obsidian: Create a new note" },
+      { "<leader>on",  "<cmd>ObsidianNewFromTemplate<cr>", desc = "Obsidian: New from template" },
+      { "<leader>oe",  "<cmd>ObsidianExtractNote<cr>",     desc = "Obsidian: Extract note" },
+
+      -- Navigation
+      { "<leader>ow",  "<cmd>ObsidianSearch<cr>",          desc = "Obsidian: Search notes" },
+      { "<leader>of",  "<cmd>ObsidianQuickSwitch<cr>",     desc = "Obsidian: Quick switch note" },
+      { "<leader>ot",  "<cmd>ObsidianTags<cr>",            desc = "Obsidian: Search tags" },
+      { "<leader>oW",  "<cmd>ObsidianWorkspace<cr>",       desc = "Obsidian: Switch workspace" },
+
+      -- Daily notes
+      { "<leader>od",  "<cmd>ObsidianToday<cr>",           desc = "Obsidian: Open today's note" },
+      { "<leader>oy",  "<cmd>ObsidianYesterday<cr>",       desc = "Obsidian: Open yesterday's note" },
+      { "<leader>or",  "<cmd>ObsidianTomorrow<cr>",        desc = "Obsidian: Open tomorrow's note" },
+      { "<leader>oD",  "<cmd>ObsidianDailies<cr>",         desc = "Obsidian: List daily notes" },
+
+      -- Links
+      { "<leader>olc", "<cmd>ObsidianLink<cr>",            desc = "Obsidian: Create link" },
+      { "<leader>oln", "<cmd>ObsidianLinkNew<cr>",         desc = "Obsidian: New note and link" },
+      { "<leader>olb", "<cmd>ObsidianBacklinks<cr>",       desc = "Obsidian: Show backlinks" },
+      { "<leader>olf", "<cmd>ObsidianFollowLink<cr>",      desc = "Obsidian: Follow link" },
+      { "<leader>oll", "<cmd>ObsidianLinks<cr>",           desc = "Obsidian: Show all links" },
+
+      -- insert
+      { "<leader>oit", "<cmd>ObsidianTemplate<cr>",        desc = "Obsidian: Insert template" },
+      { "<leader>oii", "<cmd>ObsidianPasteImg<cr>",        desc = "Obsidian: Paste image" },
+
+      -- Utilities
+      { "<leader>or",  "<cmd>ObsidianRename<cr>",          desc = "Obsidian: Rename note" },
+      { "<leader>oT",  "<cmd>ObsidianTOC<cr>",             desc = "Obsidian: Table of Contents" },
+    },
+    opts = {
+      workspaces = {
+        {
+          name = "personal",
+          path = "~/vaults/personal",
+        },
+        {
+          name = "work",
+          path = "~/vaults/work",
+        },
+      },
+    },
+  },
+  {
     "MeanderingProgrammer/render-markdown.nvim",
     cmd = "RenderMarkdown",
     ft = function()
@@ -23,46 +77,6 @@ return {
       },
     },
     opts = {},
-  },
-  {
-    "williamboman/mason-lspconfig.nvim",
-    event = "VeryLazy",
-    opts = function(_, opts)
-      opts.ensure_installed = require("utils").list_insert_unique(
-        opts.ensure_installed, { "markdown_oxide" }
-      )
-      opts.handlers = opts.handlers or {}
-      opts.handlers["markdown_oxide"] = function(_servername)
-        local capabilities = require("cmp_nvim_lsp").default_capabilities(
-          vim.lsp.protocol.make_client_capabilities()
-        )
-
-        require("lspconfig").markdown_oxide.setup {
-          capabilities = vim.tbl_deep_extend('force', capabilities, {
-            workspace = {
-              didChangeWatchedFiles = {
-                dynamicRegistration = true,
-              },
-            },
-          }),
-        }
-      end
-      return opts
-    end,
-  },
-  {
-    "hrsh7th/nvim-cmp",
-    opts = function(_, opts)
-      opts.sources = table.insert(opts.sources, {
-        name = 'nvim_lsp',
-        option = {
-          markdown_oxide = {
-            keyword_pattern = [[\(\k\| \|\/\|#\)\+]]
-          }
-        }
-      })
-      return opts
-    end,
   },
   {
     "3rd/diagram.nvim",
