@@ -68,9 +68,6 @@ local function init()
   double_press.timeFrame = 0.5
   double_press.action = function() term:activate() end
 
-  local windowManager = require("window-manager")
-  windowManager.config.grid = "8x4"
-
   bindTmuxSwitches()
 end
 
