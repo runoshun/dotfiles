@@ -2,9 +2,9 @@ require "nvchad.options"
 
 local o = vim.o
 o.cursorlineopt = "both"
-o.conceallevel = 2
 
-o.clipboard = "unnamedplus"
+-- クリップボードの設定
+vim.o.clipboard = "unnamedplus"
 
 if os.getenv("SSH_CONNECTION") ~= nil then
   local function paste()
@@ -13,6 +13,7 @@ if os.getenv("SSH_CONNECTION") ~= nil then
       vim.fn.getregtype(""),
     }
   end
+
   vim.g.clipboard = {
     name = "OSC 52",
     copy = {

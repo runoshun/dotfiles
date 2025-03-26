@@ -1,83 +1,118 @@
 --- @type LazySpec
 return {
   {
-    "epwalsh/obsidian.nvim",
-    version = "*", -- recommended, use latest release instead of latest commit
-    lazy = true,
+    "zk-org/zk-nvim",
     event = "VeryLazy",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-    },
+    config = function()
+      require("zk").setup({
+        picker = "snacks_picker",
+      })
+    end,
     keys = {
-      -- Note creation and management
-      { "<leader>oo",  "<cmd>ObsidianNew<cr>",             desc = "Obsidian: Create a new note" },
-      { "<leader>on",  "<cmd>ObsidianNewFromTemplate<cr>", desc = "Obsidian: New from template" },
-      { "<leader>oe",  "<cmd>ObsidianExtractNote<cr>",     desc = "Obsidian: Extract note" },
+      -- Open the link under the caret
+      {
+        "<CR>",
+        "<cmd>lua vim.lsp.buf.definition()<cr>",
+        mode = "n",
+        desc = "Open link under cursor",
+        ft = { "markdown" }
+      },
 
-      -- Navigation
-      { "<leader>ow",  "<cmd>ObsidianSearch<cr>",          desc = "Obsidian: Search notes" },
-      { "<leader>of",  "<cmd>ObsidianQuickSwitch<cr>",     desc = "Obsidian: Quick switch note" },
-      { "<leader>ot",  "<cmd>ObsidianTags<cr>",            desc = "Obsidian: Search tags" },
-      { "<leader>oW",  "<cmd>ObsidianWorkspace<cr>",       desc = "Obsidian: Switch workspace" },
+      -- Note creation
+      {
+        "<leader>znn",
+        function()
+          require("zk").new({
+            dir = vim.fn.expand('%:p:h'),
+            title = vim.fn.input('Title: ')
+          })
+        end,
+        mode = "n",
+        desc = "Create new note",
+        ft = { "markdown" }
+      },
+      {
+        "<leader>znt",
+        ":'<,'>ZkNewFromTitleSelection { dir = vim.fn.expand('%:p:h') }<cr>",
+        mode = "v",
+        desc = "Create note from selection (title)",
+        ft = { "markdown" }
+      },
+      {
+        "<leader>znc",
+        ":'<,'>ZkNewFromContentSelection { dir = vim.fn.expand('%:p:h'), title = vim.fn.input('Title: ') }<cr>",
+        mode = "v",
+        desc = "Create note from selection (content)",
+        ft = { "markdown" }
+      },
 
-      -- Daily notes
-      { "<leader>od",  "<cmd>ObsidianToday<cr>",           desc = "Obsidian: Open today's note" },
-      { "<leader>oy",  "<cmd>ObsidianYesterday<cr>",       desc = "Obsidian: Open yesterday's note" },
-      { "<leader>or",  "<cmd>ObsidianTomorrow<cr>",        desc = "Obsidian: Open tomorrow's note" },
-      { "<leader>oD",  "<cmd>ObsidianDailies<cr>",         desc = "Obsidian: List daily notes" },
+      -- Backlinks and navigation
+      {
+        "<leader>zb",
+        "<cmd>ZkBacklinks<cr>",
+        mode = "n",
+        desc = "Show backlinks",
+        ft = { "markdown" }
+      },
+      {
+        "<leader>zl",
+        "<cmd>ZkLinks<cr>",
+        mode = "n",
+        desc = "Show linked notes",
+        ft = { "markdown" }
+      },
 
-      -- Links
-      { "<leader>olc", "<cmd>ObsidianLink<cr>",            desc = "Obsidian: Create link" },
-      { "<leader>oln", "<cmd>ObsidianLinkNew<cr>",         desc = "Obsidian: New note and link" },
-      { "<leader>olb", "<cmd>ObsidianBacklinks<cr>",       desc = "Obsidian: Show backlinks" },
-      { "<leader>olf", "<cmd>ObsidianFollowLink<cr>",      desc = "Obsidian: Follow link" },
-      { "<leader>oll", "<cmd>ObsidianLinks<cr>",           desc = "Obsidian: Show all links" },
-
-      -- insert
-      { "<leader>oit", "<cmd>ObsidianTemplate<cr>",        desc = "Obsidian: Insert template" },
-      { "<leader>oii", "<cmd>ObsidianPasteImg<cr>",        desc = "Obsidian: Paste image" },
-
-      -- Utilities
-      { "<leader>or",  "<cmd>ObsidianRename<cr>",          desc = "Obsidian: Rename note" },
-      { "<leader>oT",  "<cmd>ObsidianTOC<cr>",             desc = "Obsidian: Table of Contents" },
-    },
-    opts = {
-      workspaces = {
-        {
-          name = "personal",
-          path = "~/vaults/personal",
-        },
-        {
-          name = "work",
-          path = "~/vaults/work",
-        },
+      -- Preview and actions
+      {
+        "K",
+        "<cmd>lua vim.lsp.buf.hover()<cr>",
+        mode = "n",
+        desc = "Preview linked note",
+        ft = { "markdown" }
+      },
+      {
+        "<leader>za",
+        ":'<,'>lua vim.lsp.buf.range_code_action()<cr>",
+        mode = "v",
+        desc = "Code actions",
+        ft = { "markdown" }
       },
     },
   },
-  -- {
-  --   "MeanderingProgrammer/render-markdown.nvim",
-  --   cmd = "RenderMarkdown",
-  --   ft = function()
-  --     local plugin = require("lazy.core.config").spec.plugins["render-markdown.nvim"]
-  --     local opts = require("lazy.core.plugin").values(plugin, "opts", false)
-  --     return opts.file_types or { "markdown" }
-  --   end,
-  --   dependencies = {
-  --     {
-  --       "nvim-treesitter/nvim-treesitter",
-  --       opts = function(_, opts)
-  --         if opts.ensure_installed ~= "all" then
-  --           opts.ensure_installed =
-  --               require("utils").list_insert_unique(
-  --                 opts.ensure_installed,
-  --                 { "html", "markdown", "markdown_inline" }
-  --               )
-  --         end
-  --       end,
-  --     },
-  --   },
-  --   opts = {},
-  -- },
+  {
+    "MeanderingProgrammer/render-markdown.nvim",
+    ft = { "markdown" },
+    dependencies = {
+      {
+        "nvim-treesitter/nvim-treesitter",
+        opts = function(_, opts)
+          if opts.ensure_installed ~= "all" then
+            opts.ensure_installed =
+                require("utils").list_insert_unique(
+                  opts.ensure_installed,
+                  { "html", "markdown", "markdown_inline" }
+                )
+          end
+        end,
+      },
+    },
+    config = function()
+      vim.api.nvim_set_hl(0, 'RenderMarkdownH1', { link = "St_ReplaceMode" })
+      vim.api.nvim_set_hl(0, 'RenderMarkdownH2', { link = "St_TerminalMode" })
+      vim.api.nvim_set_hl(0, 'RenderMarkdownH3', { link = "St_ConfirmMode" })
+      vim.api.nvim_set_hl(0, 'RenderMarkdownH4', { link = "St_NTerminalMode" })
+      vim.api.nvim_set_hl(0, 'RenderMarkdownH5', { link = "St_InsertMode" })
+      vim.api.nvim_set_hl(0, 'RenderMarkdownH6', { link = "St_SelectMode" })
+
+      vim.api.nvim_set_hl(0, 'RenderMarkdownH1Bg', { link = "St_ReplaceMode" })
+      vim.api.nvim_set_hl(0, 'RenderMarkdownH2Bg', { link = "St_TerminalMode" })
+      vim.api.nvim_set_hl(0, 'RenderMarkdownH3Bg', { link = "St_ConfirmMode" })
+      vim.api.nvim_set_hl(0, 'RenderMarkdownH4Bg', { link = "St_NTerminalMode" })
+      vim.api.nvim_set_hl(0, 'RenderMarkdownH5Bg', { link = "St_InsertMode" })
+      vim.api.nvim_set_hl(0, 'RenderMarkdownH6Bg', { link = "St_SelectMode" })
+      require("render-markdown").setup {}
+    end
+  },
   {
     "3rd/diagram.nvim",
     dependencies = {

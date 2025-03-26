@@ -2,7 +2,25 @@ local utils = require "utils"
 
 utils.on_very_lazy(function()
   local lspconfig = require "lspconfig"
-  lspconfig.basedpyright.setup {}
+  lspconfig.basedpyright.setup {
+    settings = {
+      basedpyright = {
+        analysis = {
+          typeCheckingMode = "basic",
+          autoImportCompletions = true,
+          diagnosticSeverityOverrides = {
+            reportUnusedImport = "information",
+            reportUnusedFunction = "information",
+            reportUnusedVariable = "information",
+            reportGeneralTypeIssues = "none",
+            reportOptionalMemberAccess = "none",
+            reportOptionalSubscript = "none",
+            reportPrivateImportUsage = "none",
+          },
+        },
+      },
+    }
+  }
   lspconfig.ruff.setup {}
 end)
 
@@ -18,6 +36,14 @@ return {
   event = "VeryLazy", -- Optional: needed only if you want to type `:VenvSelect` without a keymapping
   keys = {
     { "<leader>lV", "<cmd>VenvSelect<cr>" },
-    { "<leader>lv", "<cmd>VenvSelectCached<cr>" },
+  },
+  {
+    "williamboman/mason-lspconfig.nvim",
+    optional = true,
+    opts = function(_, opts)
+      opts.ensure_installed = require("utils").list_insert_unique(
+        opts.ensure_installed, { "ruff", "basedpyright" }
+      )
+    end,
   },
 }
