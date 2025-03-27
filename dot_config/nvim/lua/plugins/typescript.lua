@@ -63,10 +63,10 @@ return {
     "williamboman/mason-lspconfig.nvim",
     event = "VeryLazy",
     opts = function(_, opts)
-      opts.ensure_installed = utils.list_insert_unique(opts.ensure_installed, { "tailwindcss-language-server" })
+      opts.ensure_installed = utils.list_insert_unique(opts.ensure_installed, { "tailwindcss" })
 
       opts.handlers = opts.handlers or {}
-      opts.handlers["tailwindcss-language-server"] = function(servername)
+      opts.handlers["tailwindcss"] = function(servername)
         require("lspconfig")[servername].setup {
         }
       end
