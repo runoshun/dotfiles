@@ -52,10 +52,24 @@ utils.on_very_lazy(function()
   require("lspconfig").vtsls.setup {}
   require("lspconfig").denols.setup {}
   require("lspconfig").biome.setup {}
+  require("lspconfig").tailwindcss.setup {}
 end)
 
 return {
   {
     "sigmasd/deno-nvim",
   },
+  {
+    "williamboman/mason-lspconfig.nvim",
+    event = "VeryLazy",
+    opts = function(_, opts)
+      opts.ensure_installed = utils.list_insert_unique(opts.ensure_installed, { "tailwindcss-language-server" })
+
+      opts.handlers = opts.handlers or {}
+      opts.handlers["tailwindcss-language-server"] = function(servername)
+        require("lspconfig")[servername].setup {
+        }
+      end
+    end
+  }
 }
