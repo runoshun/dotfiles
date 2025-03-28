@@ -2,7 +2,7 @@ export PATH=~/.local/share/mise/shims:$HOME/.local/bin:$HOME/bin:/opt/homebrew/b
 export EDITOR=nvim
 export BASH_SILENCE_DEPRECATION_WARNING=1
 
-export LLM_USER_PATH="$HOME/.config/io.datasette.llm"
+export NVIM_APPNAME=astronvim_v5
 
 source ~/.bashrc
 

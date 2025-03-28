@@ -1,9 +1,34 @@
-if true then return {} end -- WARN: REMOVE THIS LINE TO ACTIVATE THIS FILE
-
 -- AstroCore provides a central place to modify mappings, vim options, autocommands, and more!
 -- Configuration documentation can be found with `:h astrocore`
 -- NOTE: We highly recommend setting up the Lua Language Server (`:LspInstall lua_ls`)
 --       as this provides autocomplete and documentation while editing
+
+local MyTerminal = require("utils.my_toggle_terminal")
+_G.my_rightbelow_terminal = MyTerminal:new(15, "belowright")
+
+local function clipboard_option()
+  if os.getenv("SSH_CONNECTION") ~= nil then
+    local function paste()
+      return {
+        vim.fn.split(vim.fn.getreg(""), "\n"),
+        vim.fn.getregtype(""),
+      }
+    end
+    return {
+      name = "OSC 52",
+      copy = {
+        ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
+        ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
+      },
+      paste = {
+        ["+"] = paste,
+        ["*"] = paste,
+      },
+    }
+  else
+    return nil
+  end
+end
 
 ---@type LazySpec
 return {
@@ -27,16 +52,17 @@ return {
     -- vim options can be configured here
     options = {
       opt = { -- vim.opt.<key>
-        relativenumber = true, -- sets vim.opt.relativenumber
+        relativenumber = false, -- sets vim.opt.relativenumber
         number = true, -- sets vim.opt.number
         spell = false, -- sets vim.opt.spell
         signcolumn = "yes", -- sets vim.opt.signcolumn to yes
-        wrap = false, -- sets vim.opt.wrap
+        wrap = true, -- sets vim.opt.wrap
+        clipboard = "unnamedplus",
+        foldcolumn = "0",
       },
       g = { -- vim.g.<key>
-        -- configure global vim variables (vim.g)
-        -- NOTE: `mapleader` and `maplocalleader` must be set in the AstroNvim opts or before `lazy.setup`
-        -- This can be found in the `lua/lazy_setup.lua` file
+        termguicolors = true,
+        clipboard = clipboard_option(),
       },
     },
     -- Mappings can be configured through AstroCore as well.
@@ -44,29 +70,19 @@ return {
     mappings = {
       -- first key is the mode
       n = {
-        -- second key is the lefthand side of the map
+        ["<C-e>"] = { function() vim.cmd 'Neotree toggle' end },
+        [";"] = { ":" },
 
-        -- navigate buffer tabs
-        ["]b"] = { function() require("astrocore.buffer").nav(vim.v.count1) end, desc = "Next buffer" },
-        ["[b"] = { function() require("astrocore.buffer").nav(-vim.v.count1) end, desc = "Previous buffer" },
+        ["<tab>"] = { function() require("astrocore.buffer").nav(vim.v.count1) end, desc = "Next buffer" },
+        ["<S-tab>"] = { function() require("astrocore.buffer").nav(-vim.v.count1) end, desc = "Previous buffer" },
 
-        -- mappings seen under group name "Buffer"
-        ["<Leader>bd"] = {
-          function()
-            require("astroui.status.heirline").buffer_picker(
-              function(bufnr) require("astrocore.buffer").close(bufnr) end
-            )
-          end,
-          desc = "Close buffer from tabline",
-        },
-
-        -- tables with just a `desc` key will be registered with which-key if it's installed
-        -- this is useful for naming menus
-        -- ["<Leader>b"] = { desc = "Buffers" },
-
-        -- setting a mapping to false will disable it
-        -- ["<C-S>"] = false,
+        ["<leader><space>"] = { function() require('telescope.builtin').find_files() end, desc = "find files" },
+        ["<F12>"] = { function() _G.my_rightbelow_terminal:toggle() end, desc = "Toggle Right Below Terminal" },
+        ["<leader>aP"] = { function() require("utils.copilot_server").restart() end, desc = "Restart Copilot Proxy" },
       },
+      t = {
+        ["<C-]>"] = { "<C-\\><C-n>", desc = "to normal mode" },
+      }
     },
   },
 }
