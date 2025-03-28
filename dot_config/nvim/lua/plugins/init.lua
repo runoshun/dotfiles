@@ -366,71 +366,16 @@ return {
     },
     config = true,
     opts = {
+      args = {
+        "--pretty",
+        "--stream",
+        "--env-file ~/.aider.env"
+      },
       win = {
         position = "right",
         width = 70,
       },
     },
-  },
-  --- }}}
-
-  --- {{{ nvim-tree
-  {
-    "nvim-tree/nvim-tree.lua",
-    cmd = { "NvimTreeToggle", "NvimTreeFocus" },
-    opts = function()
-      local function my_on_attach(bufnr)
-        local api = require("nvim-tree.api")
-
-        local function opts(desc)
-          return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
-        end
-
-        -- default mappings
-        api.config.mappings.default_on_attach(bufnr)
-
-        -- custom mappings
-        vim.keymap.del("n", "<C-e>", { buffer = bufnr })
-        vim.keymap.set("n", "l", api.node.open.edit, opts("Open"))
-      end
-
-      return {
-        on_attach = my_on_attach,
-        filters = {
-          dotfiles = false,
-          git_ignored = false,
-        },
-        disable_netrw = true,
-        hijack_cursor = true,
-        sync_root_with_cwd = true,
-        update_focused_file = {
-          enable = true,
-          update_root = false,
-        },
-        view = {
-          width = 30,
-          preserve_window_proportions = true,
-        },
-        renderer = {
-          root_folder_label = ":~:s?$?/?",
-          highlight_git = true,
-          indent_markers = { enable = true },
-          icons = {
-            glyphs = {
-              default = "󰈚",
-              folder = {
-                default = "",
-                empty = "",
-                empty_open = "",
-                open = "",
-                symlink = "",
-              },
-              git = { unmerged = "" },
-            },
-          },
-        },
-      }
-    end,
   },
   --- }}}
 
@@ -519,6 +464,67 @@ return {
     "itchyny/calendar.vim",
     event = "VeryLazy",
   },
+
+
+  --- {{{ nvim-tree
+  {
+    "nvim-tree/nvim-tree.lua",
+    cmd = { "NvimTreeToggle", "NvimTreeFocus" },
+    opts = function()
+      local function my_on_attach(bufnr)
+        local api = require("nvim-tree.api")
+
+        local function opts(desc)
+          return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
+        end
+
+        -- default mappings
+        api.config.mappings.default_on_attach(bufnr)
+
+        -- custom mappings
+        vim.keymap.del("n", "<C-e>", { buffer = bufnr })
+        vim.keymap.set("n", "l", api.node.open.edit, opts("Open"))
+      end
+
+      return {
+        on_attach = my_on_attach,
+        filters = {
+          dotfiles = false,
+          git_ignored = false,
+        },
+        disable_netrw = true,
+        hijack_cursor = true,
+        sync_root_with_cwd = true,
+        update_focused_file = {
+          enable = true,
+          update_root = false,
+        },
+        view = {
+          width = 30,
+          preserve_window_proportions = true,
+        },
+        renderer = {
+          root_folder_label = ":~:s?$?/?",
+          highlight_git = true,
+          indent_markers = { enable = true },
+          icons = {
+            glyphs = {
+              default = "󰈚",
+              folder = {
+                default = "",
+                empty = "",
+                empty_open = "",
+                open = "",
+                symlink = "",
+              },
+              git = { unmerged = "" },
+            },
+          },
+        },
+      }
+    end,
+  },
+  --- }}}
 
   window_move_plugin,
 }
