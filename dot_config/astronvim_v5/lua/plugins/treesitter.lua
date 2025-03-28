@@ -17,6 +17,8 @@ return {
       "python",
       "rust",
       "toml",
+      "markdown",
+      "markdown_inline",
       -- add more arguments for adding more treesitter parsers
     },
   },
