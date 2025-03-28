@@ -1,9 +1,0 @@
-[general]
-import = ["~/.config/alacritty/hybrid.toml", "~/.config/alacritty/common.toml"]
-
-[window]
-decorations = "Buttonless"
-decorations_theme_variant = "Dark" # "Dark"
-startup_mode = "Maximized"
-
-# vim: set ft=toml :
