@@ -53,6 +53,7 @@ return {
 	--- {{{ cmp and copilot.vim
 	{
 		"saghen/blink.cmp",
+		build = "cargo build --release",
 		opts = {
 			keymap = {
 				preset = "default",
@@ -309,12 +310,6 @@ return {
 
 			opts.picker = { layout = "default" }
 			opts.image = { enabled = true }
-			opts.scroll = {
-				animate = {
-					duration = { step = 5, total = 50 },
-					easing = "linear",
-				},
-			}
 			opts.words = { enabled = true }
 
 			local sess = require("resession").list({ dir = "dirsession" })

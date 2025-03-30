@@ -49,8 +49,6 @@ utils.on_lsp_attach(function(curr_client, bufnr)
 end)
 
 utils.on_very_lazy(function()
-	require("lspconfig").vtsls.setup({})
-	require("lspconfig").denols.setup({})
 	require("lspconfig").biome.setup({})
 	require("lspconfig").tailwindcss.setup({})
 end)
@@ -58,11 +56,73 @@ end)
 return {
 	{
 		"sigmasd/deno-nvim",
+		ft = { "javascript", "typescript", "javascriptreact", "typescriptreact" },
+		dependencies = { { "AstroNvim/astrolsp", optional = true, opts = { handlers = { denols = false } } } },
+		opts = function(_, opts)
+			local astrolsp_avail, astrolsp = pcall(require, "astrolsp")
+			if astrolsp_avail then
+				opts.server = astrolsp.lsp_opts("denols")
+			end
+		end,
 	},
 	{
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
 		opts = function(_, opts)
 			opts.ensure_installed = utils.list_insert_unique(opts.ensure_installed, { "tailwindcss-language-server" })
 		end,
+	},
+	{
+		"AstroNvim/astrolsp",
+		---@type AstroLSPOpts
+		opts = {
+			autocmds = {
+				eslint_fix_on_save = {
+					cond = function(client)
+						return client.name == "eslint" and vim.fn.exists(":EslintFixAll") > 0
+					end,
+					{
+						event = "BufWritePost",
+						desc = "Fix all eslint errors",
+						callback = function(args)
+							if vim.F.if_nil(vim.b[args.buf].autoformat, vim.g.autoformat, true) then
+								vim.cmd.EslintFixAll()
+							end
+						end,
+					},
+				},
+			},
+			---@diagnostic disable: missing-fields
+			config = {
+				vtsls = {
+					settings = {
+						typescript = {
+							updateImportsOnFileMove = { enabled = "always" },
+							inlayHints = {
+								parameterNames = { enabled = "all" },
+								parameterTypes = { enabled = true },
+								variableTypes = { enabled = true },
+								propertyDeclarationTypes = { enabled = true },
+								functionLikeReturnTypes = { enabled = true },
+								enumMemberValues = { enabled = true },
+							},
+						},
+						javascript = {
+							updateImportsOnFileMove = { enabled = "always" },
+							inlayHints = {
+								parameterNames = { enabled = "literals" },
+								parameterTypes = { enabled = true },
+								variableTypes = { enabled = true },
+								propertyDeclarationTypes = { enabled = true },
+								functionLikeReturnTypes = { enabled = true },
+								enumMemberValues = { enabled = true },
+							},
+						},
+						vtsls = {
+							enableMoveToFileCodeAction = true,
+						},
+					},
+				},
+			},
+		},
 	},
 }

@@ -1,41 +1,61 @@
 local utils = require("utils.utils")
 
-utils.on_very_lazy(function()
-	local lspconfig = require("lspconfig")
-	lspconfig.basedpyright.setup({
-		settings = {
-			basedpyright = {
-				analysis = {
-					typeCheckingMode = "basic",
-					autoImportCompletions = true,
-					diagnosticSeverityOverrides = {
-						reportUnusedImport = "information",
-						reportUnusedFunction = "information",
-						reportUnusedVariable = "information",
-						reportGeneralTypeIssues = "none",
-						reportOptionalMemberAccess = "none",
-						reportOptionalSubscript = "none",
-						reportPrivateImportUsage = "none",
+return {
+	{
+		"AstroNvim/astrolsp",
+		optional = true,
+		---@type AstroLSPOpts
+		opts = {
+			---@diagnostic disable: missing-fields
+			config = {
+				ruff = {
+					on_attach = function(client)
+						client.server_capabilities.hoverProvider = false
+					end,
+				},
+				basedpyright = {
+					before_init = function(_, c)
+						if not c.settings then
+							c.settings = {}
+						end
+						if not c.settings.python then
+							c.settings.python = {}
+						end
+						c.settings.python.pythonPath = vim.fn.exepath("python")
+					end,
+					settings = {
+						basedpyright = {
+							analysis = {
+								typeCheckingMode = "basic",
+								autoImportCompletions = true,
+								diagnosticSeverityOverrides = {
+									reportUnusedImport = "information",
+									reportUnusedFunction = "information",
+									reportUnusedVariable = "information",
+									reportGeneralTypeIssues = "none",
+									reportOptionalMemberAccess = "none",
+									reportOptionalSubscript = "none",
+									reportPrivateImportUsage = "none",
+								},
+							},
+						},
 					},
 				},
 			},
 		},
-	})
-	lspconfig.ruff.setup({})
-end)
-
-return {
-	"linux-cultist/venv-selector.nvim",
-	branch = "regexp",
-	dependencies = { "neovim/nvim-lspconfig", "nvim-telescope/telescope.nvim" },
-	opts = {
-		-- Your options go here
-		-- name = "venv",
-		-- auto_refresh = false
 	},
-	event = "VeryLazy", -- Optional: needed only if you want to type `:VenvSelect` without a keymapping
-	keys = {
-		{ "<leader>lV", "<cmd>VenvSelect<cr>" },
+	{
+		"linux-cultist/venv-selector.nvim",
+		branch = "regexp",
+		dependencies = { "neovim/nvim-lspconfig", "nvim-telescope/telescope.nvim" },
+		opts = {
+			-- name = "venv",
+			-- auto_refresh = false
+		},
+		event = "VeryLazy", -- Optional: needed only if you want to type `:VenvSelect` without a keymapping
+		keys = {
+			{ "<leader>lV", "<cmd>VenvSelect<cr>" },
+		},
 	},
 	{
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
