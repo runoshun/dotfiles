@@ -7,9 +7,9 @@ return {
 		opts = {
 			provider = "openrouter_gemini25_free",
 			auto_suggestions_provider = nil,
-			cursor_applying_provider = "groq_llama33",
+			-- cursor_applying_provider = "groq_llama33",
 			behaviour = {
-				enable_cursor_planning_mode = true,
+				-- enable_cursor_planning_mode = true,
 				auto_apply_diff_after_generation = true,
 			},
 			copilot = {
