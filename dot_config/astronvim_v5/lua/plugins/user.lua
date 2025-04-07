@@ -50,7 +50,7 @@ end)() -- }}}
 return {
 	window_move_plugin,
 
-	--- {{{ cmp and copilot.vim
+	--- {{{ cmp and copilot
 	{
 		"saghen/blink.cmp",
 		build = "cargo build --release",
@@ -62,11 +62,43 @@ return {
 			},
 		},
 	},
+	-- {
+	-- 	"github/copilot.vim",
+	-- 	event = "BufEnter",
+	-- 	config = function()
+	-- 		vim.g.copilot_filetypes = {
+	-- 			yaml = true,
+	-- 			bash = true,
+	-- 			python = true,
+	-- 			markdown = true,
+	-- 			typescript = true,
+	-- 			javascript = true,
+	-- 			lua = true,
+	-- 		}
+	-- 		vim.keymap.set("i", "<C-J>", 'copilot#Accept("\\<CR>")', {
+	-- 			expr = true,
+	-- 			replace_keycodes = false,
+	-- 		})
+	-- 	end,
+	-- },
 	{
-		"github/copilot.vim",
-		event = "BufEnter",
-		config = function()
-			vim.g.copilot_filetypes = {
+		"zbirenbaum/copilot.lua",
+		opts = {
+			panel = {
+				enabled = false,
+			},
+			suggestion = {
+				auto_trigger = true,
+				keymap = {
+					accept = "<Tab>",
+					accept_word = false,
+					accept_line = false,
+					next = "<M-]>",
+					prev = "<M-[>",
+					dismiss = "<C-]>",
+				},
+			},
+			filetypes = {
 				yaml = true,
 				bash = true,
 				python = true,
@@ -74,163 +106,8 @@ return {
 				typescript = true,
 				javascript = true,
 				lua = true,
-			}
-			vim.keymap.set("i", "<C-J>", 'copilot#Accept("\\<CR>")', {
-				expr = true,
-				replace_keycodes = false,
-			})
-		end,
-	},
-	--- }}}
-
-	--- {{{ copilot-chat
-	{
-		"CopilotC-Nvim/CopilotChat.nvim",
-		version = "^2",
-		enable = false,
-		cmd = {
-			"CopilotChat",
-			"CopilotChatOpen",
-			"CopilotChatClose",
-			"CopilotChatToggle",
-			"CopilotChatStop",
-			"CopilotChatReset",
-			"CopilotChatSave",
-			"CopilotChatLoad",
-			"CopilotChatDebugInfo",
-			"CopilotChatModels",
-			"CopilotChatExplain",
-			"CopilotChatReview",
-			"CopilotChatFix",
-			"CopilotChatOptimize",
-			"CopilotChatDocs",
-			"CopilotChatFixDiagnostic",
-			"CopilotChatCommit",
-			"CopilotChatCommitStaged",
-		},
-		dependencies = {
-			{ "zbirenbaum/copilot.lua" },
-			{ "nvim-lua/plenary.nvim" },
-			{ "nvim-telescope/telescope.nvim" },
-		},
-		keys = {
-			{ "<leader>aa", "<cmd>CopilotChat<cr>", { silent = true, desc = "Open Copilot Chat" } },
-		},
-		config = function()
-			-- Disable the enable_claude function
-			local Copilot = require("CopilotChat.copilot")
-			Copilot.enable_claude = function() end
-
-			require("CopilotChat").setup({
-				model = "claude-3.7-sonnet",
-				context = "buffer",
-				show_help = false,
-				window = {
-					layout = "vertical",
-					width = 74, -- absolute width in columns
-					height = vim.o.lines - 4, -- absolute height in rows, subtract for command line and status line
-				},
-				mappings = {
-					reset = {
-						normal = "<C-x>",
-						insert = "<C-x>",
-					},
-				},
-				prompts = {
-					Explain = {
-						prompt = "/COPILOT_EXPLAIN アクティブな選択範囲の説明を段落形式で書いてください。日本語で返答ください。",
-					},
-					Review = {
-						prompt = "/COPILOT_REVIEW 選択されたコードをレビューしてください。日本語で返答ください。",
-					},
-					FixCode = {
-						prompt = "/COPILOT_GENERATE このコードには問題があります。バグを修正したコードに書き直してください。日本語で返答ください。",
-					},
-					Refactor = {
-						prompt = "/COPILOT_GENERATE 明瞭性と可読性を向上させるために、次のコードをリファクタリングしてください。日本語で返答ください。",
-					},
-					BetterNamings = {
-						prompt = "/COPILOT_GENERATE 選択されたコードの変数名や関数名を改善してください。日本語で返答ください。",
-					},
-					Docs = {
-						prompt = "/COPILOT_GENERATE 選択範囲にドキュメントコメントを追加してください。日本語で返答ください。",
-					},
-					Tests = {
-						prompt = "/COPILOT_GENERATE コードのテストを生成してください。日本語で返答ください。",
-					},
-					Wording = {
-						prompt = "/COPILOT_GENERATE 次のテキストの文法と表現を改善してください。日本語で返答ください。",
-					},
-					Summarize = {
-						prompt = "/COPILOT_GENERATE 選択範囲の要約を書いてください。日本語で返答ください。",
-					},
-					Spelling = {
-						prompt = "/COPILOT_GENERATE 次のテキストのスペルミスを修正してください。日本語で返答ください。",
-					},
-					FixDiagnostic = {
-						prompt = "ファイル内の次の問題を支援してください:",
-					},
-					Commit = {
-						prompt = "変更のコミットメッセージをcommitizenの規約に従って日本語で書いてください。タイトルは最大50文字、メッセージは72文字で折り返してください。メッセージ全体をgitcommit言語のコードブロックで囲んでください。",
-					},
-					CommitStaged = {
-						prompt = "変更のコミットメッセージをcommitizenの規約に従って日本語で書いてください。タイトルは最大50文字、メッセージは72文字で折り返してください。メッセージ全体をgitcommit言語のコードブロックで囲んでください。",
-					},
-				},
-			})
-		end,
-	},
-	--- }}}
-
-	--- {{{ nvim-aider
-	{
-		"GeorgesAlkhouri/nvim-aider",
-		cmd = {
-			"AiderTerminalToggle",
-			"AiderHealth",
-		},
-		keys = {
-			{ "<leader>ai", "<cmd>AiderTerminalToggle<cr>", desc = "Open Aider" },
-			-- {
-			-- 	"<leader>as",
-			-- 	"<cmd>AiderTerminalSend<cr>",
-			-- 	desc = "Send to Aider",
-			-- 	mode = { "n", "v" },
-			-- },
-			-- { "<leader>ac", "<cmd>AiderQuickSendCommand<cr>", desc = "Send Command To Aider" },
-			-- { "<leader>ab", "<cmd>AiderQuickSendBuffer<cr>", desc = "Send Buffer To Aider" },
-			-- { "<leader>a+", "<cmd>AiderQuickAddFile<cr>", desc = "Add File to Aider" },
-			-- { "<leader>a-", "<cmd>AiderQuickDropFile<cr>", desc = "Drop File from Aider" },
-			-- { "<leader>ar", "<cmd>AiderQuickReadOnlyFile<cr>", desc = "Add File as Read-Only" },
-			-- -- Example nvim-tree.lua integration if needed
-			-- {
-			-- 	"<leader>a+",
-			-- 	"<cmd>AiderTreeAddFile<cr>",
-			-- 	desc = "Add File from Tree to Aider",
-			-- 	ft = "NvimTree",
-			-- },
-			-- {
-			-- 	"<leader>a-",
-			-- 	"<cmd>AiderTreeDropFile<cr>",
-			-- 	desc = "Drop File from Tree from Aider",
-			-- 	ft = "NvimTree",
-			-- },
-		},
-		dependencies = {
-			"folke/snacks.nvim",
-			"nvim-tree/nvim-tree.lua",
-		},
-		config = true,
-		opts = {
-			args = {
-				"--pretty",
-				"--stream",
-				"--env-file ~/.aider.env",
 			},
-			win = {
-				position = "right",
-				width = 70,
-			},
+			copilot_model = "gpt-4o-copilot",
 		},
 	},
 	--- }}}
