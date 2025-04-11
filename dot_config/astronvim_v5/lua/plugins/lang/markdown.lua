@@ -13,10 +13,12 @@ return {
 			local opts = { noremap = true, silent = false }
 			map(
 				"n",
-				"<leader>zn",
+				"<leader>znn",
 				"<Cmd>ZkNew { dir = vim.fn.expand('%:p:h'), title = vim.fn.input('Title: ') }<CR>",
 				opts
 			)
+			map("n", "<leader>zni", "<Cmd>ZkNew { dir = 'recruit/interview' }<CR>", opts)
+			map("n", "<leader>znm", "<Cmd>ZkNew { dir = 'recruit/info_session' }<CR>", opts)
 			map("v", "<leader>znt", ":'<,'>ZkNewFromTitleSelection { dir = vim.fn.expand('%:p:h') }<CR>", opts)
 			map(
 				"v",
