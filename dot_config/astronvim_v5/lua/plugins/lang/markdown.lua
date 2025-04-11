@@ -7,76 +7,58 @@ return {
 			require("zk").setup({
 				picker = "snacks_picker",
 			})
-		end,
-		keys = {
-			-- Open the link under the caret
-			{
-				"<CR>",
-				"<cmd>lua vim.lsp.buf.definition()<cr>",
-				mode = "n",
-				desc = "Open link under cursor",
-				ft = { "markdown" },
-			},
-
-			-- Note creation
-			{
-				"<leader>znn",
-				function()
-					require("zk").new({
-						dir = vim.fn.expand("%:p:h"),
-						title = vim.fn.input("Title: "),
-					})
-				end,
-				mode = "n",
-				desc = "Create new note",
-			},
-			{
-				"<leader>znt",
-				":'<,'>ZkNewFromTitleSelection { dir = vim.fn.expand('%:p:h') }<cr>",
-				mode = "v",
-				desc = "Create note from selection (title)",
-				ft = { "markdown" },
-			},
-			{
+			local function map(...)
+				vim.api.nvim_set_keymap(...)
+			end
+			local opts = { noremap = true, silent = false }
+			map(
+				"n",
+				"<leader>zn",
+				"<Cmd>ZkNew { dir = vim.fn.expand('%:p:h'), title = vim.fn.input('Title: ') }<CR>",
+				opts
+			)
+			map("v", "<leader>znt", ":'<,'>ZkNewFromTitleSelection { dir = vim.fn.expand('%:p:h') }<CR>", opts)
+			map(
+				"v",
 				"<leader>znc",
-				":'<,'>ZkNewFromContentSelection { dir = vim.fn.expand('%:p:h'), title = vim.fn.input('Title: ') }<cr>",
-				mode = "v",
-				desc = "Create note from selection (content)",
-			},
-			{
-				"<leader>zj",
-				':ZkNew {"dir": "journal/daily"}<cr>',
-				desc = "Create journal note",
-			},
+				":'<,'>ZkNewFromContentSelection { dir = vim.fn.expand('%:p:h'), title = vim.fn.input('Title: ') }<CR>",
+				opts
+			)
 
-			-- Backlinks and navigation
-			{
-				"<leader>zb",
-				"<cmd>ZkBacklinks<cr>",
-				mode = "n",
-				desc = "Show backlinks",
-			},
-			{
-				"<leader>zl",
-				"<cmd>ZkLinks<cr>",
-				mode = "n",
-				desc = "Show linked notes",
-			},
+			map("n", "<leader>zb", "<Cmd>ZkBacklinks<CR>", opts)
+			map("n", "<leader>zl", "<Cmd>ZkLinks<CR>", opts)
+			map("n", "K", "<Cmd>lua vim.lsp.buf.hover()<CR>", opts)
+			map("v", "<leader>za", ":'<,'>lua vim.lsp.buf.range_code_action()<CR>", opts)
 
-			-- Preview and actions
-			{
-				"K",
-				"<cmd>lua vim.lsp.buf.hover()<cr>",
-				mode = "n",
-				desc = "Preview linked note",
-			},
-			{
-				"<leader>za",
-				":'<,'>lua vim.lsp.buf.range_code_action()<cr>",
-				mode = "v",
-				desc = "Code actions",
-			},
-		},
+			vim.api.nvim_create_autocmd({ "BufEnter" }, {
+				pattern = { "*.md" },
+				callback = function(ev)
+					vim.keymap.set("n", "<CR>", function()
+						local line = vim.api.nvim_get_current_line()
+						local col = vim.fn.col(".")
+						local word = vim.fn.expand("<cword>")
+						local lnum = vim.fn.line(".")
+
+						if line:sub(col, col) == "[" then
+							return
+						end
+
+						if line:sub(col - 1, col - 1) == "]" then
+							return
+						end
+
+						if line:sub(col - #word, col - #word) == "[" then
+							return
+						end
+
+						if line:sub(col + #word, col + #word) == "]" then
+							return
+						end
+						vim.lsp.buf.definition()
+					end, { noremap = true, silent = true, buffer = ev.buf })
+				end,
+			})
+		end,
 	},
 	{
 		"MeanderingProgrammer/render-markdown.nvim",
