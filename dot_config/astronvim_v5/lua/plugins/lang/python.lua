@@ -47,12 +47,11 @@ return {
 	{
 		"linux-cultist/venv-selector.nvim",
 		branch = "regexp",
-		dependencies = { "neovim/nvim-lspconfig", "nvim-telescope/telescope.nvim" },
+		dependencies = { "neovim/nvim-lspconfig" },
 		opts = {
-			-- name = "venv",
-			-- auto_refresh = false
+			picker = "native",
 		},
-		event = "VeryLazy", -- Optional: needed only if you want to type `:VenvSelect` without a keymapping
+		event = "VeryLazy",
 		keys = {
 			{ "<leader>lV", "<cmd>VenvSelect<cr>" },
 		},

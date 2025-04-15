@@ -1,59 +1,44 @@
 -- vim: foldmethod=marker
 
-if true then
-	--- {{{ copilot chat and aider
-	--- @type LazySpec
-	return {
-		{
-			"GeorgesAlkhouri/nvim-aider",
-			cmd = {
-				"AiderTerminalToggle",
-				"AiderHealth",
+-- @type "avante" | "codecompanion" | "copilit-chat"
+local using = "codecompanion"
+
+local aider = {
+	{
+		"GeorgesAlkhouri/nvim-aider",
+		cmd = {
+			"AiderTerminalToggle",
+			"AiderHealth",
+		},
+		keys = {
+			{ "<leader>ai", "<cmd>AiderTerminalToggle<cr>", desc = "Open Aider" },
+			{ "<leader>a+", "<cmd>AiderQuickAddFile<cr>", desc = "Add File to Aider" },
+			{ "<leader>a-", "<cmd>AiderQuickDropFile<cr>", desc = "Drop File from Aider" },
+		},
+		dependencies = {
+			"folke/snacks.nvim",
+			"nvim-tree/nvim-tree.lua",
+		},
+		config = true,
+		opts = {
+			args = {
+				"--pretty",
+				"--stream",
+				"--env-file ~/.aider.env",
 			},
-			keys = {
-				{ "<leader>ai", "<cmd>AiderTerminalToggle<cr>", desc = "Open Aider" },
-				{
-					"<leader>as",
-					"<cmd>AiderTerminalSend<cr>",
-					desc = "Send to Aider",
-					mode = { "n", "v" },
-				},
-				{ "<leader>ac", "<cmd>AiderQuickSendCommand<cr>", desc = "Send Command To Aider" },
-				{ "<leader>ab", "<cmd>AiderQuickSendBuffer<cr>", desc = "Send Buffer To Aider" },
-				{ "<leader>a+", "<cmd>AiderQuickAddFile<cr>", desc = "Add File to Aider" },
-				{ "<leader>a-", "<cmd>AiderQuickDropFile<cr>", desc = "Drop File from Aider" },
-				{ "<leader>ar", "<cmd>AiderQuickReadOnlyFile<cr>", desc = "Add File as Read-Only" },
-				-- Example nvim-tree.lua integration if needed
-				{
-					"<leader>a+",
-					"<cmd>AiderTreeAddFile<cr>",
-					desc = "Add File from Tree to Aider",
-					ft = "NvimTree",
-				},
-				{
-					"<leader>a-",
-					"<cmd>AiderTreeDropFile<cr>",
-					desc = "Drop File from Tree from Aider",
-					ft = "NvimTree",
-				},
-			},
-			dependencies = {
-				"folke/snacks.nvim",
-				"nvim-tree/nvim-tree.lua",
-			},
-			config = true,
-			opts = {
-				args = {
-					"--pretty",
-					"--stream",
-					"--env-file ~/.aider.env",
-				},
-				win = {
-					position = "right",
-					width = 70,
-				},
+			win = {
+				position = "right",
+				width = 70,
 			},
 		},
+	},
+}
+
+if using == "copilot-chat" then
+	--- {{{ copilot chat
+	--- @type LazySpec
+	return {
+		aider,
 		{
 			"CopilotC-Nvim/CopilotChat.nvim",
 			version = "^2",
@@ -154,10 +139,162 @@ if true then
 	--- }}}
 end
 
-if false then
+if using == "codecompanion" then
+	--- {{{ codecompanion.nvim
+	return {
+		aider,
+		{
+			"olimorris/codecompanion.nvim",
+			config = true,
+			opts = function(_, opts)
+				local default_model = "deepseek/deepseek-chat-v3-0324:free"
+				local available_models = {
+					"deepseek/deepseek-chat-v3-0324:free",
+					"deepseek/deepseek-chat-v3-0324",
+					"google/gemini-2.0-flash-001",
+					"google/gemini-2.5-pro-preview-03-25:free",
+					"anthropic/claude-3.7-sonnet",
+					"openrouter/quasar-alpha",
+				}
+				local current_model = default_model
+
+				local function select_model()
+					vim.ui.select(available_models, {
+						prompt = "Select  Model:",
+					}, function(choice)
+						if choice then
+							current_model = choice
+							vim.notify("Selected model: " .. current_model)
+						end
+					end)
+				end
+
+				local env_opts = require("env.code-companion")
+				local base_opts = {
+					language = "Japanese",
+					adapters = {
+						openrouter = function()
+							return require("codecompanion.adapters").extend("openai_compatible", {
+								env = {
+									url = "https://openrouter.ai/api",
+									api_key = "OPENROUTER_API_KEY",
+									chat_url = "/v1/chat/completions",
+								},
+								schema = {
+									model = {
+										default = current_model,
+									},
+								},
+								body = {
+									provider = {
+										sort = "throughput",
+										ignore = { "SambaNova" },
+									},
+								},
+							})
+						end,
+					},
+					display = {
+						diff = {
+							enabled = true,
+							close_chat_at = 240, -- Close an open chat buffer if the total columns of your display are less than...
+							layout = "vertical", -- vertical|horizontal split for default provider
+							opts = {
+								"internal",
+								"filler",
+								"closeoff",
+								"algorithm:patience",
+								"followwrap",
+								"linematch:120",
+							},
+							provider = "mini_diff", -- default|mini_diff
+						},
+					},
+					strategies = {
+						chat = {
+							adapter = "openrouter",
+							roles = {
+								llm = function(adapter)
+									return "  CodeCompanion (" .. adapter.formatted_name .. ")"
+								end,
+								user = "  Me",
+							},
+							tools = {
+								["mcp"] = {
+									callback = require("mcphub.extensions.codecompanion"),
+									description = "Call tools and resources from the MCP Servers",
+									opts = {
+										user_approval = true,
+									},
+								},
+							},
+						},
+						inline = {
+							adapter = "openrouter",
+						},
+					},
+				}
+
+				vim.keymap.set("n", "<leader>am", function()
+					select_model()
+				end, { desc = "Select CodeCompanion Model" })
+				vim.keymap.set(
+					{ "n", "v" },
+					"<leader>aa",
+					"<cmd>CodeCompanionActions<cr>",
+					{ noremap = true, silent = true }
+				)
+				vim.keymap.set(
+					{ "n", "v" },
+					"<leader>ac",
+					"<cmd>CodeCompanionChat Toggle<cr>",
+					{ noremap = true, silent = true }
+				)
+				vim.keymap.set("v", "ga", "<cmd>CodeCompanionChat Add<cr>", { noremap = true, silent = true })
+
+				return vim.tbl_deep_extend("force", opts, base_opts, env_opts)
+			end,
+			dependencies = {
+				"nvim-lua/plenary.nvim",
+				"nvim-treesitter/nvim-treesitter",
+				{ "echasnovski/mini.diff", version = "*" },
+				{
+					"ravitemer/mcphub.nvim",
+					dependencies = {
+						"nvim-lua/plenary.nvim",
+					},
+					cmd = "MCPHub",
+					native_servers = {},
+					build = function()
+						vim.fn.system(
+							"NPM_CONFIG_PREFIX="
+								.. vim.fs.joinpath(vim.fn.stdpath("data"), "mcp-hub")
+								.. " npm install -g mcp-hub"
+						)
+					end,
+					opts = {
+						config = vim.fs.joinpath(vim.fn.stdpath("config"), "config", "mcp-hub.json"),
+						cmd = vim.fs.joinpath(vim.fn.stdpath("data"), "mcp-hub", "bin", "mcp-hub"),
+						extensions = {
+							codecompanion = {
+								show_result_in_chat = true,
+								make_vars = true,
+								make_slash_commands = true,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	--- }}}
+end
+
+if using == "avante" then
 	--- {{{ avante.nvim
 	--- @type LazySpec
 	return {
+		aider,
 		{
 			"yetone/avante.nvim",
 			event = "VeryLazy",
@@ -168,7 +305,7 @@ if false then
 				-- cursor_applying_provider = "groq_llama33",
 				behaviour = {
 					-- enable_cursor_planning_mode = true,
-					auto_apply_diff_after_generation = true,
+					auto_apply_diff_after_generation = false,
 				},
 				copilot = {
 					model = "claude-3.7-sonnet",

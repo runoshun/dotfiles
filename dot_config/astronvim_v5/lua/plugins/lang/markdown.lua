@@ -138,6 +138,7 @@ return {
 			max_height = nil,
 			max_width_window_percentage = nil,
 			max_height_window_percentage = 50,
+			editor_only_render_when_focused = true,
 			kitty_method = "normal",
 			hijack_file_patterns = { "*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp" }, -- render image files as images when opened
 		},

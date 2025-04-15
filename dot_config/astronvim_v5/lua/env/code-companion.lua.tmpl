@@ -1,0 +1,67 @@
+-- vim: ft=lua :
+
+-- {{ if eq .hosttype "work" }}
+if true then
+	return {
+		adapters = {
+			bedrock = function()
+				return require("codecompanion.adapters").extend("anthropic", {
+					raw = {
+						"--aws-sigv4=aws:amz:${aws_region}:bedrock",
+						"--user=${aws_access_key_id}:${aws_secret_access_key}",
+					},
+					header = {
+						["x-amz-security-token"] = "${aws_session_token}",
+					},
+					env = {
+						url = "https://bedrock-runtime.${aws_region}.amazonaws.com/model/${model}/invoke",
+						model = "schema.model.default",
+						aws_region = function()
+							return vim.system({ "aws", "configure", "--profile", "bedrock", "get", "region" })
+								:wait().stdout
+								:gsub("\n", "")
+						end,
+						aws_access_key_id = function()
+							return vim.system({ "aws", "configure", "--profile", "bedrock", "get", "aws_access_key_id" })
+								:wait().stdout
+								:gsub("\n", "")
+						end,
+						aws_secret_access_key = function()
+							return vim.system({
+								"aws",
+								"configure",
+								"--profile",
+								"bedrock",
+								"get",
+								"aws_secret_access_key",
+							})
+								:wait().stdout
+								:gsub("\n", "")
+						end,
+						aws_session_token = function()
+							return vim.system({ "aws", "configure", "--profile", "bedrock", "get", "aws_session_token" })
+								:wait().stdout
+								:gsub("\n", "")
+						end,
+					},
+					schema = {
+						model = {
+							default = "",
+						},
+					},
+				})
+			end,
+		},
+		strategies = {
+			chat = {
+				adapter = "bedrock",
+			},
+			inline = {
+				adapter = "bedrock",
+			},
+		},
+	}
+end
+-- {{ else }}
+return {}
+-- {{ end }}

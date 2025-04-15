@@ -81,34 +81,46 @@ return {
 	-- 		})
 	-- 	end,
 	-- },
+
 	{
 		"zbirenbaum/copilot.lua",
-		opts = {
-			panel = {
-				enabled = false,
-			},
-			suggestion = {
-				auto_trigger = true,
-				keymap = {
-					accept = "<Tab>",
-					accept_word = false,
-					accept_line = false,
-					next = "<M-]>",
-					prev = "<M-[>",
-					dismiss = "<C-]>",
+		config = function()
+			require("copilot").setup({
+				panel = {
+					enabled = false,
 				},
-			},
-			filetypes = {
-				yaml = true,
-				bash = true,
-				python = true,
-				markdown = true,
-				typescript = true,
-				javascript = true,
-				lua = true,
-			},
-			copilot_model = "gpt-4o-copilot",
-		},
+				suggestion = {
+					auto_trigger = true,
+					keymap = {
+						accept = "<C-j>",
+						accept_word = false,
+						accept_line = false,
+						next = "<M-]>",
+						prev = "<M-[>",
+						dismiss = "<C-]>",
+					},
+				},
+				filetypes = {
+					yaml = true,
+					bash = true,
+					python = true,
+					markdown = true,
+					typescript = true,
+					javascript = true,
+					lua = true,
+				},
+				copilot_model = "gpt-4o-copilot",
+			})
+			vim.keymap.set("i", "<Tab>", function()
+				if require("copilot.suggestion").is_visible() then
+					require("copilot.suggestion").accept()
+				else
+					vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Tab>", true, false, true), "n", false)
+				end
+			end, {
+				desc = "Supertab",
+			})
+		end,
 	},
 	--- }}}
 
@@ -389,6 +401,35 @@ return {
 				silent = true,
 			})
 		end,
+	},
+	--- }}}
+
+	--- {{{ nvim-spectre
+	{
+		"nvim-pack/nvim-spectre",
+		keys = {
+			{
+				"<leader>sw",
+				"<cmd>lua require('spectre').open_visual({select_word=true})<CR>",
+				desc = "Search current word",
+				mode = "v",
+			},
+			{
+				"<leader>sw",
+				"<cmd>lua require('spectre').open_visual()<CR>",
+				desc = "Search current word",
+			},
+			{
+				"<leader>sf",
+				"<cmd>lua require('spectre').open_file_search({select_word=true})<CR>",
+				desc = "Search on current file",
+			},
+			{
+				"<leader>sp",
+				"<cmd>lua require('spectre').toggle()<CR>",
+				desc = "Toggle Spectre",
+			},
+		},
 	},
 	--- }}}
 

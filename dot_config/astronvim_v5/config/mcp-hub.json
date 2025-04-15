@@ -1,24 +1,21 @@
 {
-  "nativeMCPServers": {
-    "neovim": {
-      "disabled": false,
-      "disabled_tools": [
-        "delete_item",
-        "execute_command",
-        "find_files",
-        "list_directory",
-        "move_item",
-        "read_file",
-        "replace_in_file",
-        "write_file"
-      ]
-    }
-  },
   "mcpServers": {
     "playwright": {
       "command": "npx",
       "args": [
-        "@playwright/mcp@latest"
+        "@playwright/mcp@latest",
+        "--headless"
+      ]
+    }
+  },
+  "nativeMCPServers": {
+    "neovim": {
+      "disabled": false,
+      "disabled_tools": [
+        
+      ],
+      "disabled_prompts": [
+        "parrot"
       ]
     }
   }
