@@ -24,11 +24,12 @@ local aider = {
 					if opts.window == nil then
 						opts.window = {}
 					end
+					if opts.window.mappings == nil then
+						opts.window.mappings = {}
+					end
 
-					opts.window.mappings = {
-						["0"] = { "nvim_aider_add", desc = "add to aider" },
-						["-"] = { "nvim_aider_drop", desc = "drop from aider" },
-					}
+					opts.window.mappings["0"] = { "nvim_aider_add", desc = "add to aider" }
+					opts.window.mappings["-"] = { "nvim_aider_add_readonly", desc = "add readonly to aider" }
 					require("nvim_aider.neo_tree").setup(opts)
 				end,
 			},
