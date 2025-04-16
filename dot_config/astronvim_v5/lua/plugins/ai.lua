@@ -11,13 +11,30 @@ local aider = {
 			"AiderHealth",
 		},
 		keys = {
-			{ "<leader>ai", "<cmd>AiderTerminalToggle<cr>", desc = "Open Aider" },
-			{ "<leader>a+", "<cmd>AiderQuickAddFile<cr>", desc = "Add File to Aider" },
-			{ "<leader>a-", "<cmd>AiderQuickDropFile<cr>", desc = "Drop File from Aider" },
+			{ "<leader>ai", "<cmd>Aider toggle<cr>", desc = "Toggle Aider" },
+			{ "<leader>as", "<cmd>Aider send<cr>", desc = "Send to Aider", mode = { "n", "v" } },
+			{ "<leader>ac", "<cmd>Aider command<cr>", desc = "Aider Commands" },
+			{ "<leader>ab", "<cmd>Aider buffer<cr>", desc = "Send Buffer" },
+			{ "<leader>a+", "<cmd>Aider add<cr>", desc = "Add File" },
+			{ "<leader>a-", "<cmd>Aider drop<cr>", desc = "Drop File" },
+			{ "<leader>ar", "<cmd>Aider add readonly<cr>", desc = "Add Read-Only" },
 		},
 		dependencies = {
 			"folke/snacks.nvim",
-			"nvim-tree/nvim-tree.lua",
+			{
+				"nvim-neo-tree/neo-tree.nvim",
+				opts = function(_, opts)
+					if opts.window == nil then
+						opts.window = {}
+					end
+
+					opts.window.mappings = {
+						["0"] = { "nvim_aider_add", desc = "add to aider" },
+						["-"] = { "nvim_aider_drop", desc = "drop from aider" },
+					}
+					require("nvim_aider.neo_tree").setup(opts)
+				end,
+			},
 		},
 		config = true,
 		opts = {
