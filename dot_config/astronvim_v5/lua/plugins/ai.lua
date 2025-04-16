@@ -1,7 +1,7 @@
 -- vim: foldmethod=marker
 
 -- @type "avante" | "codecompanion" | "copilit-chat"
-local using = "codecompanion"
+local using = "ai-terminal"
 
 local aider = {
 	{
@@ -12,10 +12,7 @@ local aider = {
 		},
 		keys = {
 			{ "<leader>ai", "<cmd>Aider toggle<cr>", desc = "Toggle Aider" },
-			{ "<leader>as", "<cmd>Aider send<cr>", desc = "Send to Aider", mode = { "n", "v" } },
-			{ "<leader>ac", "<cmd>Aider command<cr>", desc = "Aider Commands" },
-			{ "<leader>ab", "<cmd>Aider buffer<cr>", desc = "Send Buffer" },
-			{ "<leader>a+", "<cmd>Aider add<cr>", desc = "Add File" },
+			{ "<leader>a0", "<cmd>Aider add<cr>", desc = "Add File" },
 			{ "<leader>a-", "<cmd>Aider drop<cr>", desc = "Drop File" },
 			{ "<leader>ar", "<cmd>Aider add readonly<cr>", desc = "Add Read-Only" },
 		},
@@ -50,6 +47,115 @@ local aider = {
 		},
 	},
 }
+-- AI!
+
+if using == "ai-terminal" then
+	return {
+		aider,
+		-- lazy.nvim plugin specification
+		{
+			"aweis89/ai-terminals.nvim",
+			-- Example opts using functions for dynamic command generation (matches plugin defaults)
+			opts = {
+				terminals = {
+					-- goose = {
+					-- 	cmd = function()
+					-- 		return string.format("GOOSE_CLI_THEME=%s goose", vim.o.background)
+					-- 	end,
+					-- },
+					-- claude = {
+					-- 	cmd = function()
+					-- 		return string.format("claude config set -g theme %s && claude", vim.o.background)
+					-- 	end,
+					-- },
+					aider = {
+						cmd = function()
+							return string.format(
+								"aider --env-file ~/.aider.env --watch-files --%s-mode",
+								vim.o.background
+							)
+						end,
+					},
+					-- aichat = {
+					-- 	cmd = function()
+					-- 		return string.format(
+					-- 			"AICHAT_LIGHT_THEME=%s aichat -r %%functions%% --session",
+					-- 			tostring(vim.o.background == "light") -- Convert boolean to string "true" or "false"
+					-- 		)
+					-- 	end,
+					-- },
+				},
+				default_position = "right", -- Example: Make terminals open at the bottom by default
+			},
+			keys = {
+				-- Diff Tools
+				{
+					"<leader>add",
+					function()
+						require("ai-terminals").diff_changes()
+					end,
+					desc = "Show diff of last changes made",
+				},
+				{
+					"<leader>adc",
+					function()
+						require("ai-terminals").close_diff()
+					end,
+					desc = "Close all diff views (and wipeout buffers)",
+				},
+				{
+					"<leader>ati", -- Mnemonic: AI Terminal Aider
+					function()
+						require("ai-terminals").toggle("aider")
+					end,
+					desc = "Toggle Aider terminal (sends selection in visual mode)",
+					mode = { "n", "v" },
+				},
+				{
+					"<leader>ac",
+					function()
+						require("ai-terminals").aider_comment("AI!") -- Adds comment and saves file
+					end,
+					desc = "Add 'AI!' comment above line",
+				},
+				{
+					"<leader>aC",
+					function()
+						require("ai-terminals").aider_comment("AI?") -- Adds comment and saves file
+					end,
+					desc = "Add 'AI?' comment above line",
+				},
+				{
+					"<leader>al",
+					function()
+						-- add current file
+						require("ai-terminals").aider_add_files({ vim.fn.expand("%:p") })
+					end,
+					desc = "Add current file to Aider",
+				},
+				{
+					"<leader>ada", -- Mnemonic: AI Diagnostics Aider
+					function()
+						require("ai-terminals").send_diagnostics("aider")
+					end,
+					desc = "Send diagnostics to Aider",
+					mode = { "n", "v" },
+				},
+				-- Example: Run a command and send output to a specific terminal (e.g., Aider)
+				{
+					"<leader>ar", -- Mnemonic: AI Run command
+					function()
+						-- Prompt user for command
+						require("ai-terminals").send_command_output("aider")
+						-- Or use a fixed command like:
+						-- require("ai-terminals").send_command_output("aider", "make test")
+					end,
+					desc = "Run command (prompts) and send output to Aider terminal",
+				},
+			},
+		},
+	}
+end
 
 if using == "copilot-chat" then
 	--- {{{ copilot chat
