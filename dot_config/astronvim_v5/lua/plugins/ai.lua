@@ -42,11 +42,9 @@ local function select_recursive(current_active_states, available_toggles, last_s
 				if current_active_states[toggle.name] then
 					-- Set the environment variable to its active value
 					vim.fn.setenv(toggle.env_var, toggle.value_when_active)
-					vim.notify(string.format("Set %s=%s", toggle.env_var, toggle.value_when_active), vim.log.levels.INFO)
 				else
 					-- Unset the environment variable (set to nil)
 					vim.fn.setenv(toggle.env_var, nil)
-					vim.notify(string.format("Unset %s", toggle.env_var), vim.log.levels.INFO)
 				end
 			end
 
