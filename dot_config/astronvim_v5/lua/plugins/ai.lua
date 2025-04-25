@@ -13,38 +13,51 @@ local function aider_args()
 	}
 end
 
--- Define toggles using environment variables
+-- Define toggles using environment variables with default states
 local valid_aider_env_toggles = {
-	{ name = "Restore Chat History", setting = "AIDER_RESTORE_CHAT_HISTORY=true" },
-	{ name = "Disable Auto Commits", setting = "AIDER_AUTO_COMMITS=false" },
-	{ name = "Enable Subtree Only", setting = "AIDER_SUBTREE_ONLY=true" },
-	-- Add more toggles here if needed, following the Aider documentation for environment variables
+	{ name = "Restore Chat History", setting = "AIDER_RESTORE_CHAT_HISTORY=true", default_active = false },
+	{ name = "Disable Auto Commits", setting = "AIDER_AUTO_COMMITS=false", default_active = false }, -- Active state means setting it to false
+	{ name = "Enable Subtree Only", setting = "AIDER_SUBTREE_ONLY=true", default_active = false },
+	-- Add more toggles here if needed
 }
 
--- Recursive function to select environment variable toggles
-local function select_recursive(selected_envs, available_toggles)
+-- Recursive function to select and toggle environment variable settings
+local function select_recursive(current_active_states, available_toggles)
 	local display_opts = { "[Done]" }
+	local toggle_map = {} -- Map display name back to toggle definition
+
 	for _, toggle in ipairs(available_toggles) do
-		table.insert(display_opts, toggle.name)
+		local state_str = current_active_states[toggle.name] and "ON" or "OFF"
+		local display_name = string.format("%s [%s]", toggle.name, state_str)
+		table.insert(display_opts, display_name)
+		toggle_map[display_name] = toggle
 	end
 
 	vim.ui.select(display_opts, {
-		prompt = "Select Aider toggle (or Done):",
+		prompt = "Toggle Aider setting (or Done):",
 		format_item = function(item)
 			return item
 		end,
 	}, function(choice)
 		if not choice or choice == "[Done]" then
 			-- User selected Done or cancelled
+			local final_env_settings = {}
+			for _, toggle in ipairs(available_toggles) do
+				if current_active_states[toggle.name] then
+					table.insert(final_env_settings, toggle.setting)
+				end
+			end
+
 			local env_vars = {}
-			if #selected_envs > 0 then
-				for _, setting in ipairs(selected_envs) do
+			if #final_env_settings > 0 then
+				for _, setting in ipairs(final_env_settings) do
 					local parts = vim.split(setting, "=", { plain = true, max = 2 })
 					if #parts == 2 then
 						env_vars[parts[1]] = parts[2]
 					end
 				end
 			end
+
 			-- Launch Aider with selected environment variables
 			require("nvim_aider").api.toggle_terminal({
 				args = aider_args(),
@@ -53,46 +66,27 @@ local function select_recursive(selected_envs, available_toggles)
 			return
 		end
 
-		-- User selected a toggle
-		local chosen_toggle = nil
-		local next_available_toggles = {}
-		for _, toggle in ipairs(available_toggles) do
-			if toggle.name == choice then
-				chosen_toggle = toggle
-			else
-				table.insert(next_available_toggles, toggle)
-			end
-		end
-
-		if chosen_toggle then
-			table.insert(selected_envs, chosen_toggle.setting)
-		end
-
-		-- Recurse if there are still toggles left
-		if #next_available_toggles > 0 then
-			select_recursive(selected_envs, next_available_toggles)
+		-- User selected a toggle to flip its state
+		local selected_toggle = toggle_map[choice]
+		if selected_toggle then
+			current_active_states[selected_toggle.name] = not current_active_states[selected_toggle.name]
+			-- Call recursively with updated states and the same available toggles
+			select_recursive(current_active_states, available_toggles)
 		else
-			-- No more toggles left, launch aider
-			local env_vars = {}
-			if #selected_envs > 0 then
-				for _, setting in ipairs(selected_envs) do
-					local parts = vim.split(setting, "=", { plain = true, max = 2 })
-					if #parts == 2 then
-						env_vars[parts[1]] = parts[2]
-					end
-				end
-			end
-			require("nvim_aider").api.toggle_terminal({
-				args = aider_args(),
-				env = env_vars,
-			})
+			-- Should not happen unless choice is nil or "[Done]"
+			vim.notify("Invalid selection", vim.log.levels.WARN)
 		end
 	end)
 end
 
 local function toggle_aider_with_opts()
-	-- Start the recursive selection with empty selected list and all valid toggles
-	select_recursive({}, vim.deepcopy(valid_aider_env_toggles))
+	-- Initialize states based on defaults
+	local initial_states = {}
+	for _, toggle in ipairs(valid_aider_env_toggles) do
+		initial_states[toggle.name] = toggle.default_active
+	end
+	-- Start the recursive selection
+	select_recursive(initial_states, valid_aider_env_toggles)
 end
 
 local aider = {
