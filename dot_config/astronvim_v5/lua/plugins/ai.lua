@@ -53,22 +53,11 @@ local function select_recursive(current_active_states, available_toggles, last_s
 			for _, toggle in ipairs(available_toggles) do
 				local final_value_for_env
 				if current_active_states[toggle.name] then
-					-- Toggle is active, the value should be its active_value
-					final_value_for_env = toggle.active_value
+					-- Toggle is ON, the value should be "true"
+					final_value_for_env = "true"
 				else
-					-- Toggle is inactive, the value should be the opposite of its active_value
-					if toggle.active_value == "true" then
-						final_value_for_env = "false"
-					elseif toggle.active_value == "false" then
-						final_value_for_env = "true"
-					else
-						-- Fallback for non-boolean, though current toggles are boolean
-						final_value_for_env = toggle.default_value -- Or perhaps error
-						vim.notify(
-							"Warning: Non-boolean toggle logic used for " .. toggle.name .. ", falling back to default.",
-							vim.log.levels.WARN
-						)
-					end
+					-- Toggle is OFF, the value should be "false"
+					final_value_for_env = "false"
 				end
 
 				-- Optimization: Only set the env var if the final value is different from the default.
@@ -108,9 +97,9 @@ local function toggle_aider_with_opts()
 		local current_env_value = vim.fn.getenv(toggle.env_var)
 		-- Determine the effective value: use env var if set, otherwise use the default
 		local effective_value = (current_env_value ~= nil) and current_env_value or toggle.default_value
-		-- The toggle is considered active (ON) if the effective value matches the toggle's active_value
-		initial_active_states[toggle.name] = (effective_value == toggle.active_value)
-		-- print("Toggle: " .. toggle.name .. ", Env: " .. tostring(current_env_value) .. ", Default: " .. toggle.default_value .. ", Active: " .. toggle.active_value .. ", Effective: " .. effective_value .. ", Initial State ON: " .. tostring(initial_active_states[toggle.name]))
+		-- The toggle is considered active (ON) if the effective value is "true"
+		initial_active_states[toggle.name] = (effective_value == "true")
+		-- print("Toggle: " .. toggle.name .. ", Env: " .. tostring(current_env_value) .. ", Default: " .. toggle.default_value .. ", Effective: " .. effective_value .. ", Initial State ON: " .. tostring(initial_active_states[toggle.name]))
 	end
 	-- Start the recursive selection UI
 	select_recursive(initial_active_states, valid_aider_env_toggles, nil)
