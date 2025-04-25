@@ -3,17 +3,20 @@
 -- @type "avante" | "codecompanion" | "copilot-chat" | "ai-terminal"
 local using = "copilot-chat"
 
+-- Define the toggles with environment variable names and their active values
 local valid_aider_env_toggles = {
-	{ name = "Restore Chat History", setting = "AIDER_RESTORE_CHAT_HISTORY=true", default_active = false },
-	{ name = "Disable Auto Commits", setting = "AIDER_AUTO_COMMITS=false", default_active = false }, -- Active state means setting it to false
-	{ name = "Enable Subtree Only", setting = "AIDER_SUBTREE_ONLY=true", default_active = false },
+	{ name = "Restore Chat History", env_var = "AIDER_RESTORE_CHAT_HISTORY", value_when_active = "true" },
+	{ name = "Disable Auto Commits", env_var = "AIDER_AUTO_COMMITS", value_when_active = "false" }, -- Note: Active state means setting it to "false"
+	{ name = "Enable Subtree Only", env_var = "AIDER_SUBTREE_ONLY", value_when_active = "true" },
 }
 
+-- Recursive function to handle the selection UI
 local function select_recursive(current_active_states, available_toggles, last_selected_display_name)
 	local toggle_map = {}
 
 	local display_opts = { "[Done]" }
-	for i, toggle in ipairs(available_toggles) do
+	for _, toggle in ipairs(available_toggles) do
+		-- Generate display name based on current active state
 		local state_str = current_active_states[toggle.name] and "ON" or "OFF"
 		local display_name = string.format("%s [%s]", toggle.name, state_str)
 		table.insert(display_opts, display_name)
@@ -26,6 +29,7 @@ local function select_recursive(current_active_states, available_toggles, last_s
 		format_item = function(item)
 			return item
 		end,
+		default_choice = last_selected_display_name, -- Highlight the last selected item
 	}, function(choice)
 		if not choice or choice == "[Cancel]" then
 			vim.notify("Aider launch cancelled.", vim.log.levels.INFO)
@@ -33,33 +37,30 @@ local function select_recursive(current_active_states, available_toggles, last_s
 		end
 
 		if choice == "[Done]" then
-			local final_env_settings = {}
+			-- Apply the selected environment variable states
 			for _, toggle in ipairs(available_toggles) do
 				if current_active_states[toggle.name] then
-					table.insert(final_env_settings, toggle.setting)
+					-- Set the environment variable to its active value
+					vim.fn.setenv(toggle.env_var, toggle.value_when_active)
+					vim.notify(string.format("Set %s=%s", toggle.env_var, toggle.value_when_active), vim.log.levels.INFO)
+				else
+					-- Unset the environment variable (set to nil)
+					vim.fn.setenv(toggle.env_var, nil)
+					vim.notify(string.format("Unset %s", toggle.env_var), vim.log.levels.INFO)
 				end
 			end
 
-			local env_vars = {}
-			if #final_env_settings > 0 then
-				for _, setting in ipairs(final_env_settings) do
-					local parts = vim.split(setting, "=", { plain = true, max = 2 })
-					if #parts == 2 then
-						env_vars[parts[1]] = parts[2]
-					end
-				end
-			end
-
-			for var, value in pairs(env_vars) do
-				vim.fn.setenv(var, value)
-			end
+			-- Launch Aider after setting environment variables
 			require("nvim_aider").api.toggle_terminal()
 			return
 		end
 
+		-- Handle toggle selection
 		local selected_toggle = toggle_map[choice]
 		if selected_toggle then
+			-- Flip the state of the selected toggle
 			current_active_states[selected_toggle.name] = not current_active_states[selected_toggle.name]
+			-- Continue the selection process recursively, passing the current choice
 			select_recursive(current_active_states, available_toggles, choice)
 		else
 			vim.notify("Invalid selection logic error", vim.log.levels.ERROR)
@@ -67,11 +68,16 @@ local function select_recursive(current_active_states, available_toggles, last_s
 	end)
 end
 
+-- Function to initiate the Aider toggle process with options
 local function toggle_aider_with_opts()
 	local initial_states = {}
+	-- Determine initial states based on current environment variables
 	for _, toggle in ipairs(valid_aider_env_toggles) do
-		initial_states[toggle.name] = toggle.default_active
+		local current_value = vim.fn.getenv(toggle.env_var)
+		-- The toggle is considered active if the env var is set and matches the active value
+		initial_states[toggle.name] = (current_value ~= nil and current_value == toggle.value_when_active)
 	end
+	-- Start the recursive selection UI
 	select_recursive(initial_states, valid_aider_env_toggles, nil)
 end
 
