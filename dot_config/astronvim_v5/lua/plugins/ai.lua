@@ -21,26 +21,40 @@ local valid_aider_env_toggles = {
 	-- Add more toggles here if needed
 }
 
--- Recursive function to select and toggle environment variable settings
-local function select_recursive(current_active_states, available_toggles)
-	local display_opts = { "[Done]" }
+-- Store last selected index globally or pass it through recursion
+-- Passing through recursion is cleaner
+local function select_recursive(current_active_states, available_toggles, last_selected_display_name)
+	local display_opts = { "[Done]", "[Cancel]" } -- Add Cancel option
 	local toggle_map = {} -- Map display name back to toggle definition
+	local default_choice_index = 1 -- Default to "[Done]"
 
-	for _, toggle in ipairs(available_toggles) do
+	for i, toggle in ipairs(available_toggles) do
 		local state_str = current_active_states[toggle.name] and "ON" or "OFF"
 		local display_name = string.format("%s [%s]", toggle.name, state_str)
-		table.insert(display_opts, display_name)
+		-- Insert toggle options after [Done] and [Cancel]
+		table.insert(display_opts, i + 2, display_name)
 		toggle_map[display_name] = toggle
+		-- Check if this item was the last selected one
+		if last_selected_display_name and display_name == last_selected_display_name then
+			default_choice_index = i + 2
+		end
 	end
 
 	vim.ui.select(display_opts, {
-		prompt = "Toggle Aider setting (or Done):",
+		prompt = "Toggle Aider setting (or Done/Cancel):",
 		format_item = function(item)
 			return item
 		end,
+		default_choice = default_choice_index, -- Set the default choice
 	}, function(choice)
-		if not choice or choice == "[Done]" then
-			-- User selected Done or cancelled
+		if not choice or choice == "[Cancel]" then
+			-- User cancelled
+			vim.notify("Aider launch cancelled.", vim.log.levels.INFO)
+			return
+		end
+
+		if choice == "[Done]" then
+			-- User selected Done
 			local final_env_settings = {}
 			for _, toggle in ipairs(available_toggles) do
 				if current_active_states[toggle.name] then
@@ -67,14 +81,15 @@ local function select_recursive(current_active_states, available_toggles)
 		end
 
 		-- User selected a toggle to flip its state
+		-- User selected a toggle to flip its state
 		local selected_toggle = toggle_map[choice]
 		if selected_toggle then
 			current_active_states[selected_toggle.name] = not current_active_states[selected_toggle.name]
-			-- Call recursively with updated states and the same available toggles
-			select_recursive(current_active_states, available_toggles)
+			-- Call recursively with updated states, same toggles, and the name of the item just selected
+			select_recursive(current_active_states, available_toggles, choice)
 		else
-			-- Should not happen unless choice is nil or "[Done]"
-			vim.notify("Invalid selection", vim.log.levels.WARN)
+			-- Should not happen unless choice is nil, "[Done]", or "[Cancel]"
+			vim.notify("Invalid selection logic error", vim.log.levels.ERROR)
 		end
 	end)
 end
@@ -85,8 +100,8 @@ local function toggle_aider_with_opts()
 	for _, toggle in ipairs(valid_aider_env_toggles) do
 		initial_states[toggle.name] = toggle.default_active
 	end
-	-- Start the recursive selection
-	select_recursive(initial_states, valid_aider_env_toggles)
+	-- Start the recursive selection, passing nil for last selected initially
+	select_recursive(initial_states, valid_aider_env_toggles, nil)
 end
 
 local aider = {
