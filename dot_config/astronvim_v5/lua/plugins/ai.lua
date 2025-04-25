@@ -18,23 +18,57 @@ local valid_aider_opts = {
 	"--subtree-only",
 }
 
-local function toggle_aider_with_opts()
-	vim.ui.input({
-		prompt = "Aider options: ",
-		completion = function(arglead)
-			return vim.tbl_filter(function(opt)
-				return vim.startswith(opt, arglead)
-			end, valid_aider_opts)
+local function select_recursive(selected_opts, available_opts)
+	local display_opts = vim.list_extend({ "[Done]" }, available_opts)
+
+	vim.ui.select(display_opts, {
+		prompt = "Select Aider option (or Done):",
+		format_item = function(item)
+			return item
 		end,
-	}, function(input)
-		if not input or input == "" then
+	}, function(choice)
+		if not choice or choice == "[Done]" then
+			-- User selected Done or cancelled
+			if #selected_opts > 0 then
+				require("nvim_aider").api.toggle_terminal({
+					args = vim.iter({ aider_args(unpack(selected_opts)) }):flatten():totable(),
+				})
+			else
+				-- If no options were selected, maybe toggle without extra args or do nothing?
+				-- For now, let's toggle with default args if none selected.
+				require("nvim_aider").api.toggle_terminal({
+					args = aider_args(), -- Or pass {} if default args are handled elsewhere
+				})
+				-- Alternatively, do nothing: print("No options selected.")
+			end
 			return
 		end
-		local args = vim.split(input, "%s+", { trimempty = true })
-		require("nvim_aider").api.toggle_terminal({
-			args = vim.iter({ aider_args(unpack(args)) }):flatten():totable(),
-		})
+
+		-- User selected an option
+		table.insert(selected_opts, choice)
+
+		local next_available_opts = {}
+		for _, opt in ipairs(available_opts) do
+			if opt ~= choice then
+				table.insert(next_available_opts, opt)
+			end
+		end
+
+		-- Recurse if there are still options left
+		if #next_available_opts > 0 then
+			select_recursive(selected_opts, next_available_opts)
+		else
+			-- No more options left, launch aider
+			require("nvim_aider").api.toggle_terminal({
+				args = vim.iter({ aider_args(unpack(selected_opts)) }):flatten():totable(),
+			})
+		end
 	end)
+end
+
+local function toggle_aider_with_opts()
+	-- Start the recursive selection with empty selected list and all valid options
+	select_recursive({}, vim.deepcopy(valid_aider_opts))
 end
 
 local aider = {
