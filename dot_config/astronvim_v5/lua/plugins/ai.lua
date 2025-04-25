@@ -8,19 +8,16 @@ local valid_aider_env_toggles = {
 	{
 		name = "Restore Chat History",
 		env_var = "AIDER_RESTORE_CHAT_HISTORY",
-		active_value = "true", -- Value when this toggle is ON
 		default_value = "false", -- Aider's default if env var is unset
 	},
 	{
-		name = "Disable Auto Commits", -- Note: Toggle name implies the *action*
+		name = "Auto Commits", -- Note: Toggle name implies the *action*
 		env_var = "AIDER_AUTO_COMMITS",
-		active_value = "false", -- Value when this toggle is ON (i.e., auto-commits are disabled)
 		default_value = "true", -- Aider's default if env var is unset (i.e., auto-commits are enabled)
 	},
 	{
 		name = "Enable Subtree Only",
 		env_var = "AIDER_SUBTREE_ONLY",
-		active_value = "true", -- Value when this toggle is ON
 		default_value = "false", -- Aider's default if env var is unset
 	},
 }
