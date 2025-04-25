@@ -1,16 +1,50 @@
 -- vim: foldmethod=marker
 
--- @type "avante" | "codecompanion" | "copilit-chat"
-local using = "ai-terminal"
+-- @type "avante" | "codecompanion" | "copilot-chat" | "ai-terminal"
+local using = "copilot-chat"
+
+local function aider_args(...)
+	local args = { ... }
+	table.insert(args, "--pretty")
+	table.insert(args, "--stream")
+	table.insert(args, "--env-file")
+	table.insert(args, vim.fn.expand("~/.aider.env"))
+	return args
+end
+
+local valid_aider_opts = {
+	"--restore-chat-history",
+	"--no-auto-commit",
+	"--subtree-only",
+}
+
+local function toggle_aider_with_opts()
+	vim.ui.input({
+		prompt = "Aider options: ",
+		completion = function(arglead)
+			return vim.tbl_filter(function(opt)
+				return vim.startswith(opt, arglead)
+			end, valid_aider_opts)
+		end,
+	}, function(input)
+		if not input or input == "" then
+			return
+		end
+		local args = vim.split(input, "%s+", { trimempty = true })
+		require("nvim_aider").api.toggle_terminal({
+			args = vim.iter({ aider_args(unpack(args)) }):flatten():totable(),
+		})
+	end)
+end
 
 local aider = {
 	{
 		"GeorgesAlkhouri/nvim-aider",
 		cmd = {
-			"AiderTerminalToggle",
-			"AiderHealth",
+			"Aider",
 		},
 		keys = {
+			{ "<leader>aI", toggle_aider_with_opts, desc = "Toggle Aider with opts" },
 			{ "<leader>ai", "<cmd>Aider toggle<cr>", desc = "Toggle Aider" },
 			{ "<leader>a0", "<cmd>Aider add<cr>", desc = "Add File" },
 			{ "<leader>a-", "<cmd>Aider drop<cr>", desc = "Drop File" },
