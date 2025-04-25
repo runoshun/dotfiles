@@ -72,10 +72,15 @@ local function select_recursive(current_active_states, available_toggles, last_s
 				end
 			end
 
-			-- Launch Aider with selected environment variables
+			-- Set environment variables using vim.fn.setenv
+			for var, value in pairs(env_vars) do
+				vim.fn.setenv(var, value)
+			end
+
+			-- Launch Aider (env vars are now set in the environment)
 			require("nvim_aider").api.toggle_terminal({
 				args = aider_args(),
-				env = env_vars,
+				-- env option is removed as variables are set directly
 			})
 			return
 		end
