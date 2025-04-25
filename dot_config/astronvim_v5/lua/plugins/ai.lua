@@ -3,11 +3,26 @@
 -- @type "avante" | "codecompanion" | "copilot-chat" | "ai-terminal"
 local using = "copilot-chat"
 
--- Define the toggles with environment variable names and their active values
+-- Define the toggles with environment variable names, their active values, and default values
 local valid_aider_env_toggles = {
-	{ name = "Restore Chat History", env_var = "AIDER_RESTORE_CHAT_HISTORY", value_when_active = "true" },
-	{ name = "Disable Auto Commits", env_var = "AIDER_AUTO_COMMITS", value_when_active = "false" }, -- Note: Active state means setting it to "false"
-	{ name = "Enable Subtree Only", env_var = "AIDER_SUBTREE_ONLY", value_when_active = "true" },
+	{
+		name = "Restore Chat History",
+		env_var = "AIDER_RESTORE_CHAT_HISTORY",
+		active_value = "true", -- Value when this toggle is ON
+		default_value = "false", -- Aider's default if env var is unset
+	},
+	{
+		name = "Disable Auto Commits", -- Note: Toggle name implies the *action*
+		env_var = "AIDER_AUTO_COMMITS",
+		active_value = "false", -- Value when this toggle is ON (i.e., auto-commits are disabled)
+		default_value = "true", -- Aider's default if env var is unset (i.e., auto-commits are enabled)
+	},
+	{
+		name = "Enable Subtree Only",
+		env_var = "AIDER_SUBTREE_ONLY",
+		active_value = "true", -- Value when this toggle is ON
+		default_value = "false", -- Aider's default if env var is unset
+	},
 }
 
 -- Recursive function to handle the selection UI
@@ -39,12 +54,34 @@ local function select_recursive(current_active_states, available_toggles, last_s
 		if choice == "[Done]" then
 			-- Apply the selected environment variable states
 			for _, toggle in ipairs(available_toggles) do
+				local final_value_for_env
 				if current_active_states[toggle.name] then
-					-- Set the environment variable to its active value
-					vim.fn.setenv(toggle.env_var, toggle.value_when_active)
+					-- Toggle is active, the value should be its active_value
+					final_value_for_env = toggle.active_value
 				else
-					-- Unset the environment variable (set to nil)
+					-- Toggle is inactive, the value should be the opposite of its active_value
+					if toggle.active_value == "true" then
+						final_value_for_env = "false"
+					elseif toggle.active_value == "false" then
+						final_value_for_env = "true"
+					else
+						-- Fallback for non-boolean, though current toggles are boolean
+						final_value_for_env = toggle.default_value -- Or perhaps error
+						vim.notify(
+							"Warning: Non-boolean toggle logic used for " .. toggle.name .. ", falling back to default.",
+							vim.log.levels.WARN
+						)
+					end
+				end
+
+				-- Optimization: Only set the env var if the final value is different from the default.
+				-- If the final value matches the default, unset the env var (set to nil).
+				if final_value_for_env == toggle.default_value then
 					vim.fn.setenv(toggle.env_var, nil)
+					-- print("Unsetting " .. toggle.env_var .. " because final value '" .. final_value_for_env .. "' matches default '" .. toggle.default_value .. "'")
+				else
+					vim.fn.setenv(toggle.env_var, final_value_for_env)
+					-- print("Setting " .. toggle.env_var .. " to '" .. final_value_for_env .. "' (default was '" .. toggle.default_value .. "')")
 				end
 			end
 
@@ -68,15 +105,18 @@ end
 
 -- Function to initiate the Aider toggle process with options
 local function toggle_aider_with_opts()
-	local initial_states = {}
-	-- Determine initial states based on current environment variables
+	local initial_active_states = {}
+	-- Determine initial active states based on current environment variables and defaults
 	for _, toggle in ipairs(valid_aider_env_toggles) do
-		local current_value = vim.fn.getenv(toggle.env_var)
-		-- The toggle is considered active if the env var is set and matches the active value
-		initial_states[toggle.name] = (current_value ~= nil and current_value == toggle.value_when_active)
+		local current_env_value = vim.fn.getenv(toggle.env_var)
+		-- Determine the effective value: use env var if set, otherwise use the default
+		local effective_value = (current_env_value ~= nil) and current_env_value or toggle.default_value
+		-- The toggle is considered active (ON) if the effective value matches the toggle's active_value
+		initial_active_states[toggle.name] = (effective_value == toggle.active_value)
+		-- print("Toggle: " .. toggle.name .. ", Env: " .. tostring(current_env_value) .. ", Default: " .. toggle.default_value .. ", Active: " .. toggle.active_value .. ", Effective: " .. effective_value .. ", Initial State ON: " .. tostring(initial_active_states[toggle.name]))
 	end
 	-- Start the recursive selection UI
-	select_recursive(initial_states, valid_aider_env_toggles, nil)
+	select_recursive(initial_active_states, valid_aider_env_toggles, nil)
 end
 
 local aider = {
