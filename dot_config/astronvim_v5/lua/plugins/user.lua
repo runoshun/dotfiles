@@ -109,7 +109,7 @@ return {
 					javascript = true,
 					lua = true,
 				},
-				copilot_model = "gpt-4o-copilot",
+				-- copilot_model = "gpt-4o-copilot",
 			})
 			vim.keymap.set("i", "<Tab>", function()
 				if require("copilot.suggestion").is_visible() then
