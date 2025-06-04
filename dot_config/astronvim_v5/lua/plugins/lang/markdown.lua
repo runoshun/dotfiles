@@ -1,85 +1,42 @@
 --- @type LazySpec
 return {
 	{
-		"zk-org/zk-nvim",
-		event = "VeryLazy",
-		config = function()
-			require("zk").setup({
-				picker = "snacks_picker",
-			})
-			local function map(...)
-				vim.api.nvim_set_keymap(...)
-			end
-			local opts = { noremap = true, silent = false }
-			map(
-				"n",
-				"<leader>znn",
-				"<Cmd>ZkNew { dir = vim.fn.expand('%:p:h'), title = vim.fn.input('Title: ') }<CR>",
-				opts
-			)
-			map("n", "<leader>zni", "<Cmd>ZkNew { dir = 'recruit/interview' }<CR>", opts)
-			map("n", "<leader>znm", "<Cmd>ZkNew { dir = 'recruit/info_session' }<CR>", opts)
-			map("v", "<leader>znt", ":'<,'>ZkNewFromTitleSelection { dir = vim.fn.expand('%:p:h') }<CR>", opts)
-			map(
-				"v",
-				"<leader>znc",
-				":'<,'>ZkNewFromContentSelection { dir = vim.fn.expand('%:p:h'), title = vim.fn.input('Title: ') }<CR>",
-				opts
-			)
-
-			map("n", "<leader>zb", "<Cmd>ZkBacklinks<CR>", opts)
-			map("n", "<leader>zl", "<Cmd>ZkLinks<CR>", opts)
-			map("n", "K", "<Cmd>lua vim.lsp.buf.hover()<CR>", opts)
-			map("v", "<leader>za", ":'<,'>lua vim.lsp.buf.range_code_action()<CR>", opts)
-
-			vim.api.nvim_create_autocmd({ "BufEnter" }, {
-				pattern = { "*.md" },
-				callback = function(ev)
-					vim.keymap.set("n", "<CR>", function()
-						local line = vim.api.nvim_get_current_line()
-						local col = vim.fn.col(".")
-						local word = vim.fn.expand("<cword>")
-						local lnum = vim.fn.line(".")
-
-						if line:sub(col, col) == "[" then
-							return
-						end
-
-						if line:sub(col - 1, col - 1) == "]" then
-							return
-						end
-
-						if line:sub(col - #word, col - #word) == "[" then
-							return
-						end
-
-						if line:sub(col + #word, col + #word) == "]" then
-							return
-						end
-						vim.lsp.buf.definition()
-					end, { noremap = true, silent = true, buffer = ev.buf })
-				end,
-			})
-		end,
-	},
-	{
-		"MeanderingProgrammer/render-markdown.nvim",
-		ft = { "markdown" },
-		config = function()
-			vim.api.nvim_set_hl(0, "RenderMarkdownH1", { link = "St_ReplaceMode" })
-			vim.api.nvim_set_hl(0, "RenderMarkdownH2", { link = "St_TerminalMode" })
-			vim.api.nvim_set_hl(0, "RenderMarkdownH3", { link = "St_ConfirmMode" })
-			vim.api.nvim_set_hl(0, "RenderMarkdownH4", { link = "St_NTerminalMode" })
-			vim.api.nvim_set_hl(0, "RenderMarkdownH5", { link = "St_InsertMode" })
-			vim.api.nvim_set_hl(0, "RenderMarkdownH6", { link = "St_SelectMode" })
-
-			vim.api.nvim_set_hl(0, "RenderMarkdownH1Bg", { link = "St_ReplaceMode" })
-			vim.api.nvim_set_hl(0, "RenderMarkdownH2Bg", { link = "St_TerminalMode" })
-			vim.api.nvim_set_hl(0, "RenderMarkdownH3Bg", { link = "St_ConfirmMode" })
-			vim.api.nvim_set_hl(0, "RenderMarkdownH4Bg", { link = "St_NTerminalMode" })
-			vim.api.nvim_set_hl(0, "RenderMarkdownH5Bg", { link = "St_InsertMode" })
-			vim.api.nvim_set_hl(0, "RenderMarkdownH6Bg", { link = "St_SelectMode" })
-			require("render-markdown").setup({})
+		"obsidian-nvim/obsidian.nvim",
+		version = "*",
+		lazy = true,
+		ft = "markdown",
+		-- Replace the above line with this if you only want to load obsidian.nvim for markdown files in your vault:
+		-- event = {
+		--   -- If you want to use the home shortcut '~' here you need to call 'vim.fn.expand'.
+		--   -- E.g. "BufReadPre " .. vim.fn.expand "~" .. "/my-vault/*.md"
+		--   -- refer to `:h file-pattern` for more examples
+		--   "BufReadPre path/to/my-vault/*.md",
+		--   "BufNewFile path/to/my-vault/*.md",
+		-- },
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+		},
+		opts = function(_, opts)
+			vim.o.conceallevel = 2
+			opts.workspaces = {
+				{
+					name = "personal",
+					path = "~/notebook/personal",
+				},
+				{
+					name = "work",
+					path = "~/notebook/work",
+				},
+			}
+			opts.picker = {
+				name = "snacks.pick",
+			}
+			opts.completion = {
+				nvim_cmp = false,
+				blink = true,
+				min_chars = 2,
+			}
+			return opts
 		end,
 	},
 	{
