@@ -24,6 +24,7 @@ spoon.SpoonInstall:andUse("PaperWM", {
 	config = { screen_margin = 16, window_gap = 2 },
 	fn = function(s)
 		s.window_ratios = { 0.5, 0.98 }
+		s.window_filter:setScreens({ "Built%-in Retina Display" })
 		s:bindHotkeys({
 			-- switch to a new focused window in tiled grid
 			focus_left = { hyper, "h" },
