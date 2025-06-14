@@ -6,6 +6,7 @@ local isin_deno_project_memo = {}
 local isin_deno_project = function(bufnr)
 	local fname = vim.api.nvim_buf_get_name(bufnr)
 	local dir = vim.fs.dirname(fname)
+	print("Checking if in Deno project: " .. dir)
 
 	if isin_deno_project_memo[dir] ~= nil then
 		return isin_deno_project_memo[dir]
@@ -17,6 +18,7 @@ local isin_deno_project = function(bufnr)
 		end
 
 		if vim.fn.filereadable(vim.fs.joinpath(dir, "deno.json")) == 1 then
+			print("Found deno.json in: " .. dir)
 			isin_deno_project_memo[dir] = true
 			return true
 		end
@@ -33,17 +35,19 @@ local isin_deno_project = function(bufnr)
 end
 
 utils.on_lsp_attach(function(curr_client, bufnr)
-	if curr_client and curr_client.name == "denols" then
+	if curr_client and (curr_client.name == "denols" or curr_client.name == "vtsls") then
 		if isin_deno_project(bufnr) then
 			local clients = vim.lsp.get_clients({
 				bufnr = bufnr,
 				name = "vtsls",
 			})
-			for _, client in ipairs(clients) do
-				vim.lsp.stop_client(client.id, true)
-			end
+			vim.lsp.stop_client(clients, true)
 		else
-			vim.lsp.stop_client(curr_client.id, true)
+			local clients = vim.lsp.get_clients({
+				bufnr = bufnr,
+				name = "denols",
+			})
+			vim.lsp.stop_client(clients, true)
 		end
 	end
 end)

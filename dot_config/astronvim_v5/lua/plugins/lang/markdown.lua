@@ -17,7 +17,7 @@ return {
 			"nvim-lua/plenary.nvim",
 		},
 		opts = function(_, opts)
-			vim.o.conceallevel = 2
+			vim.o.conceallevel = 1
 			opts.workspaces = {
 				{
 					name = "personal",
