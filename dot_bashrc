@@ -158,6 +158,10 @@ auto-marine-dev-instance() {
     autossh -M 0 -N -f -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" marine-dev-instance-launch
 }
 
+openai-claudecode() {
+    deno run --reload -A https://raw.githubusercontent.com/runoshun/dotfiles/refs/heads/main/dot_config/astronvim_v5/scripts/claude-to-openai/main.ts
+}
+
 portforwarding-daemon() {
     if [ $# -ne 1 ]; then
         echo "usage: portforwarding-daemon <ssh-host>|logs|refresh"
@@ -228,6 +232,10 @@ delete-default-vpcs() {
                 done
         done
 }
+
+if [ -f ~/.bashrc.local ]; then
+    source ~/.bashrc.local
+fi
 
 ### zoxide
 #eval "$(mise x zoxide -- zoxide init bash)"
