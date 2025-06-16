@@ -18,6 +18,10 @@ export function startServer(
     Deno.exit(1);
   }
 
+  console.log(
+    `Reasoning effort set to: ${REASONING_EFFORT}. Use the OPENAI_REASONING_EFFORT environment variable to change it.`,
+  );
+
   Deno.serve({ port }, async (req) => {
     if (debug) {
       console.log(`DEBUG Received ${req.method} request at ${req.url}`);
