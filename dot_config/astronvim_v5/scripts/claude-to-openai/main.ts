@@ -20,7 +20,7 @@ async function main() {
         "https://api.openai.com/v1",
     },
   }).spawn();
-  const writer = await Deno.create("./proxy.log");
+  const writer = await Deno.create(`/tmp/claude-to-openai.log`);
   proxyProcess.stdout.pipeTo(writer.writable);
 
   await new Promise((r) => setTimeout(r, 500));
