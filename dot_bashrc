@@ -159,7 +159,7 @@ auto-marine-dev-instance() {
 }
 
 openai-claudecode() {
-    deno run --reload -A https://raw.githubusercontent.com/runoshun/dotfiles/refs/heads/main/dot_config/astronvim_v5/scripts/claude-to-openai/main.ts
+    deno run --reload -A $HOME/.config/astronvim_v5/scripts/claude-to-openai/main.ts
 }
 
 portforwarding-daemon() {
