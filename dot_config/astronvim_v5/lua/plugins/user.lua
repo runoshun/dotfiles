@@ -82,76 +82,45 @@ return {
 	-- 	end,
 	-- },
 
-	-- {
-	-- 	"zbirenbaum/copilot.lua",
-	-- 	config = function()
-	-- 		require("copilot").setup({
-	-- 			panel = {
-	-- 				enabled = false,
-	-- 			},
-	-- 			suggestion = {
-	-- 				auto_trigger = true,
-	-- 				keymap = {
-	-- 					accept = "<C-j>",
-	-- 					accept_word = false,
-	-- 					accept_line = false,
-	-- 					next = "<M-]>",
-	-- 					prev = "<M-[>",
-	-- 					dismiss = "<C-]>",
-	-- 				},
-	-- 			},
-	-- 			filetypes = {
-	-- 				yaml = true,
-	-- 				bash = true,
-	-- 				python = true,
-	-- 				markdown = true,
-	-- 				typescript = true,
-	-- 				javascript = true,
-	-- 				lua = true,
-	-- 			},
-	-- 			-- copilot_model = "gpt-4o-copilot",
-	-- 		})
-	-- 		vim.keymap.set("i", "<Tab>", function()
-	-- 			if require("copilot.suggestion").is_visible() then
-	-- 				require("copilot.suggestion").accept()
-	-- 			else
-	-- 				vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Tab>", true, false, true), "n", false)
-	-- 			end
-	-- 		end, {
-	-- 			desc = "Supertab",
-	-- 		})
-	-- 	end,
-	-- },
 	{
 		"zbirenbaum/copilot.lua",
-		cmd = "Copilot",
-		event = "InsertEnter",
-		opts = {
-			suggestion = { enabled = false },
-			panel = { enabled = false },
-			filetypes = {
-				markdown = true,
-				help = true,
-			},
-		},
-	},
-	{
-		"saghen/blink.cmp",
-		optional = true,
-		dependencies = { "fang2hou/blink-copilot" },
-		opts = {
-			sources = {
-				default = { "copilot" },
-				providers = {
-					copilot = {
-						name = "copilot",
-						module = "blink-copilot",
-						score_offset = 100,
-						async = true,
+		config = function()
+			require("copilot").setup({
+				panel = {
+					enabled = false,
+				},
+				suggestion = {
+					auto_trigger = true,
+					keymap = {
+						accept = "<C-j>",
+						accept_word = false,
+						accept_line = false,
+						next = "<M-]>",
+						prev = "<M-[>",
+						dismiss = "<C-]>",
 					},
 				},
-			},
-		},
+				filetypes = {
+					yaml = true,
+					bash = true,
+					python = true,
+					markdown = true,
+					typescript = true,
+					javascript = true,
+					lua = true,
+				},
+				-- copilot_model = "gpt-4o-copilot",
+			})
+			vim.keymap.set("i", "<Tab>", function()
+				if require("copilot.suggestion").is_visible() then
+					require("copilot.suggestion").accept()
+				else
+					vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Tab>", true, false, true), "n", false)
+				end
+			end, {
+				desc = "Supertab",
+			})
+		end,
 	},
 	{
 		"copilotlsp-nvim/copilot-lsp",

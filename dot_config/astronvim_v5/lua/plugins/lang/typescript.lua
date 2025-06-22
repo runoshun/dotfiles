@@ -6,7 +6,7 @@ local isin_deno_project_memo = {}
 local isin_deno_project = function(bufnr)
 	local fname = vim.api.nvim_buf_get_name(bufnr)
 	local dir = vim.fs.dirname(fname)
-	print("Checking if in Deno project: " .. dir)
+	-- print("Checking if in Deno project: " .. dir)
 
 	if isin_deno_project_memo[dir] ~= nil then
 		return isin_deno_project_memo[dir]
@@ -18,7 +18,7 @@ local isin_deno_project = function(bufnr)
 		end
 
 		if vim.fn.filereadable(vim.fs.joinpath(dir, "deno.json")) == 1 then
-			print("Found deno.json in: " .. dir)
+			-- print("Found deno.json in: " .. dir)
 			isin_deno_project_memo[dir] = true
 			return true
 		end
