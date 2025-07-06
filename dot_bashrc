@@ -45,6 +45,9 @@ alias python=python3
 alias cg="cd \$(git rev-parse --show-toplevel)"
 alias cat="bat"
 
+alias gemini="npx @google/gemini-cli"
+aliss claude="npx @anthropic-ai/claude-code"
+
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
