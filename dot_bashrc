@@ -154,7 +154,6 @@ fi
 
 aws-auto-profiles() {
     awsume study -a -o study-auto
-    awsume bedrock-us-west-2 -a -o bedrock
 }
 
 auto-dev-instance() {

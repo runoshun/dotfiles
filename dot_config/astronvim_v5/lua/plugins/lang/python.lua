@@ -24,8 +24,13 @@ return {
 						c.settings.python.pythonPath = vim.fn.exepath("python")
 					end,
 					settings = {
+						require("lspconfig").basedpyright.setup {
 						basedpyright = {
 							analysis = {
+        				diagnosticMode = "openFilesOnly",
+        				inlayHints = {
+        				  callArgumentNames = true
+        				},
 								typeCheckingMode = "basic",
 								autoImportCompletions = true,
 								diagnosticSeverityOverrides = {
