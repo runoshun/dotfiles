@@ -1,0 +1,3 @@
+#!/bin/bash
+dirname=$(dirname "$0")
+node "$dirname/../share/agent-docker/agent-runner.js" "$@"
