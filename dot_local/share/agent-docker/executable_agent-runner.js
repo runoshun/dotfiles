@@ -64,6 +64,139 @@ class AgentRunner {
 		};
 	}
 
+	// Common cleanup operations
+	async removeWorktree(worktreePath) {
+		try {
+			execSync(`git worktree remove "${worktreePath}" --force`, {
+				stdio: "ignore",
+			});
+			console.log("Worktree removed successfully");
+		} catch (error) {
+			// If git worktree remove fails, manually remove directory
+			fs.rmSync(worktreePath, { recursive: true, force: true });
+			console.log("Worktree directory removed manually");
+		}
+	}
+
+	async removeBundleDirectory(bundleDir) {
+		if (fs.existsSync(bundleDir)) {
+			fs.rmSync(bundleDir, { recursive: true, force: true });
+			console.log("Bundle directory cleaned up");
+		}
+	}
+
+	async pruneWorktrees() {
+		try {
+			execSync("git worktree prune", { stdio: "ignore" });
+			console.log("Worktree entries pruned");
+		} catch (error) {
+			console.warn("Failed to prune worktree entries:", error.message);
+		}
+	}
+
+	// Generate Dockerfile content
+	generateDockerfileContent() {
+		return `FROM ubuntu:22.04
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \\
+    curl \\
+    git \\
+    build-essential \\
+    sudo \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN useradd -m -s /bin/bash devuser && \\
+    usermod -aG sudo devuser && \\
+    echo 'devuser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+# Create bundle management scripts
+RUN echo '#!/bin/bash' > /usr/local/bin/setup-bundle.sh && \\
+    echo 'set -e' >> /usr/local/bin/setup-bundle.sh && \\
+    echo 'echo "Setting up workspace from bundle..."' >> /usr/local/bin/setup-bundle.sh && \\
+    echo 'if [ -f "/workspace-bundle/input.bundle" ]; then' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "Found input bundle, creating repository from bundle..."' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    sudo mkdir -p /workspace' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    sudo chown -R devuser:devuser /workspace' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    git init /workspace' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    cd /workspace' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    git config user.name "Agent User"' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    git config user.email "agent@container.local"' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    git config --global --add safe.directory "*"' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    git config core.filemode false' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "Pulling from bundle..."' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    git pull /workspace-bundle/input.bundle || echo "Bundle pull failed, will try fetch"' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    sudo chown -R devuser:devuser /workspace' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "Setting up post-commit hook..."' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    mkdir -p .git/hooks' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "#!/bin/bash" > .git/hooks/post-commit' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "git bundle create /workspace-bundle/output.bundle HEAD" >> .git/hooks/post-commit' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    chmod +x .git/hooks/post-commit' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "Repository restored from bundle"' >> /usr/local/bin/setup-bundle.sh && \\
+    echo 'else' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "No input bundle found, creating empty repository..."' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    sudo mkdir -p /workspace' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    sudo chown -R devuser:devuser /workspace' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    git init /workspace' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    cd /workspace' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    git config user.name "Agent User"' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    git config user.email "agent@container.local"' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "# Agent Workspace" > README.md' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    git add README.md' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    git commit -m "Initial commit"' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "Setting up post-commit hook..."' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    mkdir -p .git/hooks' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "#!/bin/bash" > .git/hooks/post-commit' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "git bundle create /workspace-bundle/output.bundle HEAD" >> .git/hooks/post-commit' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    chmod +x .git/hooks/post-commit' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "Empty repository created"' >> /usr/local/bin/setup-bundle.sh && \\
+    echo 'fi' >> /usr/local/bin/setup-bundle.sh && \\
+    echo 'echo "Workspace setup complete"' >> /usr/local/bin/setup-bundle.sh
+
+RUN echo '#!/bin/bash' > /usr/local/bin/export-bundle.sh && \\
+    echo 'set -e' >> /usr/local/bin/export-bundle.sh && \\
+    echo 'echo "Exporting workspace to bundle..."' >> /usr/local/bin/export-bundle.sh && \\
+    echo 'cd /workspace' >> /usr/local/bin/export-bundle.sh && \\
+    echo 'if ! git rev-parse HEAD >/dev/null 2>&1; then' >> /usr/local/bin/export-bundle.sh && \\
+    echo '    echo "No commits found, nothing to export"' >> /usr/local/bin/export-bundle.sh && \\
+    echo '    exit 0' >> /usr/local/bin/export-bundle.sh && \\
+    echo 'fi' >> /usr/local/bin/export-bundle.sh && \\
+    echo 'git bundle create /workspace-bundle/output.bundle HEAD' >> /usr/local/bin/export-bundle.sh && \\
+    echo 'echo "Bundle exported to /workspace-bundle/output.bundle"' >> /usr/local/bin/export-bundle.sh
+
+# Make scripts executable
+RUN chmod +x /usr/local/bin/setup-bundle.sh /usr/local/bin/export-bundle.sh
+
+# Switch to non-root user
+USER devuser
+WORKDIR /home/devuser
+
+# Install mise for the user
+ENV MISE_VERSION=2025.6.8
+RUN curl https://mise.run | sh
+ENV PATH="/home/devuser/.local/bin:$PATH"
+
+# Install Node.js globally via mise for npx availability
+RUN /home/devuser/.local/bin/mise use -g node@20
+
+# Initialize mise in bash profile
+RUN echo 'eval "$(mise activate bash)"' >> /home/devuser/.bashrc
+
+# Add aliases for common tools
+RUN echo "alias claude='npx @anthropic-ai/claude-code'" >> /home/devuser/.bashrc
+RUN echo "alias claude-yolo='npx @anthropic-ai/claude-code --dangerously-skip-permissions'" >> /home/devuser/.bashrc
+RUN echo "alias gemini='npx @google/gemini-cli'" >> /home/devuser/.bashrc
+RUN echo "alias gemini-yolo='npx @google/gemini-cli --yolo'" >> /home/devuser/.bashrc
+
+# Set working directory
+WORKDIR /workspace
+
+# Default command
+CMD ["bash"]
+`;
+	}
+
 	async run() {
 		try {
 			const args = this.parseArgs();
@@ -316,33 +449,13 @@ ${Object.entries(MountUtils.getPresets())
 			fs.unlinkSync(outputBundle);
 			console.log("Output bundle cleaned up");
 
-			// Remove worktree but keep branch
+			// Clean up after successful merge
 			console.log("Removing worktree (branch will be preserved)...");
-			try {
-				execSync(`git worktree remove "${worktreePath}" --force`, {
-					stdio: "ignore",
-				});
-				console.log("Worktree removed successfully");
-			} catch (removeError) {
-				// If git worktree remove fails, manually remove directory
-				fs.rmSync(worktreePath, { recursive: true, force: true });
-				console.log("Worktree directory removed manually");
-			}
-
-			// Clean up bundle directory
 			const { bundleDir } = this.getBundlePaths(agentName);
-			if (fs.existsSync(bundleDir)) {
-				fs.rmSync(bundleDir, { recursive: true, force: true });
-				console.log("Bundle directory cleaned up");
-			}
-
-			// Prune orphaned worktree entries
-			try {
-				execSync("git worktree prune", { stdio: "ignore" });
-				console.log("Worktree entries pruned");
-			} catch (pruneError) {
-				console.warn("Failed to prune worktree entries:", pruneError.message);
-			}
+			
+			await this.removeWorktree(worktreePath);
+			await this.removeBundleDirectory(bundleDir);
+			await this.pruneWorktrees();
 		} catch (error) {
 			console.warn(`Failed to merge bundle: ${error.message}`);
 			console.log(`Output bundle preserved at: ${outputBundle}`);
@@ -467,105 +580,7 @@ ${Object.entries(MountUtils.getPresets())
 		);
 
 		console.log("Creating temporary Dockerfile...");
-		const dockerfileContent = `FROM ubuntu:22.04
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \\
-    curl \\
-    git \\
-    build-essential \\
-    sudo \\
-    && rm -rf /var/lib/apt/lists/*
-
-# Create non-root user
-RUN useradd -m -s /bin/bash devuser && \\
-    usermod -aG sudo devuser && \\
-    echo 'devuser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-
-# Create bundle management scripts
-RUN echo '#!/bin/bash' > /usr/local/bin/setup-bundle.sh && \\
-    echo 'set -e' >> /usr/local/bin/setup-bundle.sh && \\
-    echo 'echo "Setting up workspace from bundle..."' >> /usr/local/bin/setup-bundle.sh && \\
-    echo 'if [ -f "/workspace-bundle/input.bundle" ]; then' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    echo "Found input bundle, creating repository from bundle..."' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    sudo mkdir -p /workspace' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    sudo chown -R devuser:devuser /workspace' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    git init /workspace' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    cd /workspace' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    git config user.name "Agent User"' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    git config user.email "agent@container.local"' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    git config --global --add safe.directory "*"' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    git config core.filemode false' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    echo "Pulling from bundle..."' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    git pull /workspace-bundle/input.bundle || echo "Bundle pull failed, will try fetch"' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    sudo chown -R devuser:devuser /workspace' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    echo "Setting up post-commit hook..."' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    mkdir -p .git/hooks' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    echo "#!/bin/bash" > .git/hooks/post-commit' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    echo "git bundle create /workspace-bundle/output.bundle HEAD" >> .git/hooks/post-commit' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    chmod +x .git/hooks/post-commit' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    echo "Repository restored from bundle"' >> /usr/local/bin/setup-bundle.sh && \\
-    echo 'else' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    echo "No input bundle found, creating empty repository..."' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    sudo mkdir -p /workspace' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    sudo chown -R devuser:devuser /workspace' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    git init /workspace' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    cd /workspace' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    git config user.name "Agent User"' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    git config user.email "agent@container.local"' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    echo "# Agent Workspace" > README.md' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    git add README.md' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    git commit -m "Initial commit"' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    echo "Setting up post-commit hook..."' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    mkdir -p .git/hooks' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    echo "#!/bin/bash" > .git/hooks/post-commit' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    echo "git bundle create /workspace-bundle/output.bundle HEAD" >> .git/hooks/post-commit' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    chmod +x .git/hooks/post-commit' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    echo "Empty repository created"' >> /usr/local/bin/setup-bundle.sh && \\
-    echo 'fi' >> /usr/local/bin/setup-bundle.sh && \\
-    echo 'echo "Workspace setup complete"' >> /usr/local/bin/setup-bundle.sh
-
-RUN echo '#!/bin/bash' > /usr/local/bin/export-bundle.sh && \\
-    echo 'set -e' >> /usr/local/bin/export-bundle.sh && \\
-    echo 'echo "Exporting workspace to bundle..."' >> /usr/local/bin/export-bundle.sh && \\
-    echo 'cd /workspace' >> /usr/local/bin/export-bundle.sh && \\
-    echo 'if ! git rev-parse HEAD >/dev/null 2>&1; then' >> /usr/local/bin/export-bundle.sh && \\
-    echo '    echo "No commits found, nothing to export"' >> /usr/local/bin/export-bundle.sh && \\
-    echo '    exit 0' >> /usr/local/bin/export-bundle.sh && \\
-    echo 'fi' >> /usr/local/bin/export-bundle.sh && \\
-    echo 'git bundle create /workspace-bundle/output.bundle HEAD' >> /usr/local/bin/export-bundle.sh && \\
-    echo 'echo "Bundle exported to /workspace-bundle/output.bundle"' >> /usr/local/bin/export-bundle.sh
-
-# Make scripts executable
-RUN chmod +x /usr/local/bin/setup-bundle.sh /usr/local/bin/export-bundle.sh
-
-# Switch to non-root user
-USER devuser
-WORKDIR /home/devuser
-
-# Install mise for the user
-ENV MISE_VERSION=2025.6.8
-RUN curl https://mise.run | sh
-ENV PATH="/home/devuser/.local/bin:$PATH"
-
-# Install Node.js globally via mise for npx availability
-RUN /home/devuser/.local/bin/mise use -g node@20
-
-# Initialize mise in bash profile
-RUN echo 'eval "$(mise activate bash)"' >> /home/devuser/.bashrc
-
-# Add aliases for common tools
-RUN echo "alias claude='npx @anthropic-ai/claude-code'" >> /home/devuser/.bashrc
-RUN echo "alias claude-yolo='npx @anthropic-ai/claude-code --dangerously-skip-permissions'" >> /home/devuser/.bashrc
-RUN echo "alias gemini='npx @google/gemini-cli'" >> /home/devuser/.bashrc
-RUN echo "alias gemini-yolo='npx @google/gemini-cli --yolo'" >> /home/devuser/.bashrc
-
-# Set working directory
-WORKDIR /workspace
-
-# Default command
-CMD ["bash"]
-`;
+		const dockerfileContent = this.generateDockerfileContent();
 		fs.writeFileSync(this.tempDockerfile, dockerfileContent);
 		console.log(`Temporary Dockerfile created: ${this.tempDockerfile}`);
 	}
@@ -591,38 +606,19 @@ CMD ["bash"]
 		try {
 			// Remove worktree
 			if (fs.existsSync(worktreePath)) {
-				try {
-					execSync(`git worktree remove "${worktreePath}" --force`, {
-						stdio: "ignore",
-					});
-					console.log("Worktree removed");
-				} catch (error) {
-					// If git worktree remove fails, manually remove directory
-					fs.rmSync(worktreePath, { recursive: true, force: true });
-					console.log("Worktree directory removed manually");
-				}
+				await this.removeWorktree(worktreePath);
 			} else {
 				console.log("No worktree found to remove");
 			}
 
-			// Remove bundle directory
-			if (fs.existsSync(bundleDir)) {
-				fs.rmSync(bundleDir, { recursive: true, force: true });
-				console.log("Bundle directory removed");
-			} else {
-				console.log("No bundle directory found to remove");
-			}
+			// Remove bundle directory  
+			await this.removeBundleDirectory(bundleDir);
 
 			// Cleanup temporary files
 			this.cleanupTempFiles();
 
 			// Prune orphaned worktree entries
-			try {
-				execSync("git worktree prune", { stdio: "ignore" });
-				console.log("Worktree entries pruned");
-			} catch (pruneError) {
-				console.warn("Failed to prune worktree entries:", pruneError.message);
-			}
+			await this.pruneWorktrees();
 
 			// Ask user if they want to remove the branch
 			console.log(`\nBranch '${branchName}' still exists.`);
