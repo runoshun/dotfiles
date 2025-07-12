@@ -566,6 +566,7 @@ USER devuser
 WORKDIR /home/devuser
 
 # Install mise for the user
+ENV MISE_VERSION=2025.6.8
 RUN curl https://mise.run | sh
 ENV PATH="/home/devuser/.local/bin:$PATH"
 
@@ -577,7 +578,9 @@ RUN echo 'eval "$(mise activate bash)"' >> /home/devuser/.bashrc
 
 # Add aliases for common tools
 RUN echo "alias claude='npx @anthropic-ai/claude-code'" >> /home/devuser/.bashrc
+RUN echo "alias claude-yolo='npx @anthropic-ai/claude-code --dangerously-skip-permissions'" >> /home/devuser/.bashrc
 RUN echo "alias gemini='npx @google/gemini-cli'" >> /home/devuser/.bashrc
+RUN echo "alias gemini-yolo='npx @google/gemini-cli --yolo'" >> /home/devuser/.bashrc
 
 # Set working directory
 WORKDIR /workspace
