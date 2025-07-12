@@ -505,7 +505,7 @@ ${Object.entries(MOUNT_PRESETS)
 				"agent-dev",
 				"bash",
 				"-c",
-				'eval "$(mise activate bash)" && (mise install 2>/dev/null || echo "No mise config found, skipping tool installation") && exec bash',
+				'eval "$(mise activate bash)" && (mise install 2>/dev/null || echo "No mise config found, skipping tool installation") && mise trust && exec bash',
 			];
 
 			console.log("Container is starting...");
