@@ -2,3 +2,6 @@
 .env
 
 node_modules
+
+# Agent workspaces (auto-generated)
+.agent-workspaces/

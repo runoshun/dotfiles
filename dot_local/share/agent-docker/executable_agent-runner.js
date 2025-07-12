@@ -103,21 +103,14 @@ class AgentRunner {
 		this.mountPresets = args.mountPresets;
 		this.customMounts = args.customMounts;
 
-		// Use repository name to create unique workspace directory
-		const repoName = this.getRepoName();
-		this.workspaceDir = path.resolve(
-			process.env.HOME,
-			".local",
-			"share",
-			"agent-workspaces",
-			repoName,
-		);
-		this.tempDockerfile = null;
-
 		// Get current directory relative to git root
 		this.gitRoot = this.getGitRoot();
 		this.currentDir = process.cwd();
 		this.relativeToGitRoot = path.relative(this.gitRoot, this.currentDir);
+
+		// Create workspace directory within repository
+		this.workspaceDir = path.join(this.gitRoot, ".agent-workspaces");
+		this.tempDockerfile = null;
 	}
 
 	getRepoName() {
@@ -181,6 +174,46 @@ class AgentRunner {
 			execSync("git worktree prune", { stdio: "ignore" });
 		} catch (error) {
 			// Ignore prune errors
+		}
+	}
+
+	async checkAndSuggestGitignore() {
+		const gitignorePath = path.join(this.gitRoot, ".gitignore");
+		const requiredEntries = [
+			".agent-workspaces/",
+			"# Agent workspaces (auto-generated)"
+		];
+
+		let gitignoreContent = "";
+		let gitignoreExists = false;
+
+		// Read existing .gitignore if it exists
+		if (fs.existsSync(gitignorePath)) {
+			gitignoreExists = true;
+			gitignoreContent = fs.readFileSync(gitignorePath, "utf8");
+		}
+
+		// Check if .agent-workspaces is already ignored
+		const isIgnored = gitignoreContent.includes(".agent-workspaces");
+
+		if (!isIgnored) {
+			console.log("⚠️  .agent-workspaces is not in .gitignore");
+			console.log("📝 Suggested .gitignore entries:");
+			console.log("   # Agent workspaces (auto-generated)");
+			console.log("   .agent-workspaces/");
+			
+			// Auto-add to .gitignore
+			const newContent = gitignoreExists 
+				? gitignoreContent + "\n# Agent workspaces (auto-generated)\n.agent-workspaces/\n"
+				: "# Agent workspaces (auto-generated)\n.agent-workspaces/\n";
+			
+			try {
+				fs.writeFileSync(gitignorePath, newContent);
+				console.log("✅ Added .agent-workspaces/ to .gitignore");
+			} catch (error) {
+				console.warn("⚠️  Failed to update .gitignore:", error.message);
+				console.log("   Please manually add '.agent-workspaces/' to your .gitignore");
+			}
 		}
 	}
 
@@ -299,6 +332,9 @@ CMD ["bash"]
 	async setupWorktree(agentName) {
 		const branchName = `feature/agent-${agentName}`;
 		const { agentDir, originalDir } = this.getAgentPaths(agentName);
+
+		// Check and suggest .gitignore entries
+		await this.checkAndSuggestGitignore();
 
 		// Ensure agent directory exists
 		if (!fs.existsSync(agentDir)) {

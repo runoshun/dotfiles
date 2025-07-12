@@ -11,15 +11,18 @@
 ### ディレクトリ構造
 
 ```
-~/.local/share/agent-workspaces/<repo-name>/
-└── <agent-name>/
-    ├── original/              # 元リポジトリのworktree
-    └── copies/                # コンテナ用コピーリポジトリ
+<git-root>/
+├── .agent-workspaces/         # ワークスペースディレクトリ（.gitignoreに追加）
+│   └── <agent-name>/
+│       ├── original/          # 元リポジトリのworktree
+│       └── copies/            # コンテナ用コピーリポジトリ
+└── .gitignore                 # 自動的に.agent-workspaces/を追加
 ```
 
 ### ワークフロー
 
 1. **エージェント開始**
+   - .gitignoreに`.agent-workspaces/`の追加をチェック・提案
    - ホスト側で `feature/agent-<name>` ブランチのworktreeを作成
    - コピーリポジトリが存在しない場合のみ：worktreeからbundleを作成してコピーリポジトリを生成
    - 既存コピーリポジトリがある場合：そのまま再利用
@@ -58,12 +61,16 @@ fi
 
 ### 利点
 
+- **リポジトリ内管理**: ワークスペースがリポジトリ内で管理される
+- **自動.gitignore**: .agent-workspaces/が自動的に除外される
 - **履歴保持**: bundleを使用してcommit履歴を完全保持
 - **データ永続化**: ファイルシステム直接マウントで作業が失われない
 - **マージ機能**: worktreeでの正式なgitマージ処理
 
 ### 主な変更点
 
+- ワークスペースをリポジトリ内の`.agent-workspaces/`に配置
+- .gitignoreの自動チェック・追加機能
 - コンテナ内bundleスクリプト削除
 - ホスト側でのbundle作成・マージ処理
 - worktreeを使った履歴保持マージ
