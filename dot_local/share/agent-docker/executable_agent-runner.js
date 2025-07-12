@@ -386,8 +386,6 @@ ${Object.entries(MountUtils.getPresets())
 					'eval "$(mise activate bash)"',
 					'(mise install 2>/dev/null || echo "No mise config found, skipping tool installation")',
 					'mise trust',
-					// Setup exit trap to export bundle
-					'trap "export-bundle.sh" EXIT',
 					// Start interactive bash
 					'exec bash'
 				].join(' && '),
@@ -463,6 +461,11 @@ RUN echo '#!/bin/bash' > /usr/local/bin/setup-bundle.sh && \\
     echo '    echo "Pulling from bundle..."' >> /usr/local/bin/setup-bundle.sh && \\
     echo '    git pull /workspace-bundle/input.bundle || echo "Bundle pull failed, will try fetch"' >> /usr/local/bin/setup-bundle.sh && \\
     echo '    sudo chown -R devuser:devuser /workspace' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "Setting up post-commit hook..."' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    mkdir -p .git/hooks' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "#!/bin/bash" > .git/hooks/post-commit' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "git bundle create /workspace-bundle/output.bundle HEAD" >> .git/hooks/post-commit' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    chmod +x .git/hooks/post-commit' >> /usr/local/bin/setup-bundle.sh && \\
     echo '    echo "Repository restored from bundle"' >> /usr/local/bin/setup-bundle.sh && \\
     echo 'else' >> /usr/local/bin/setup-bundle.sh && \\
     echo '    echo "No input bundle found, creating empty repository..."' >> /usr/local/bin/setup-bundle.sh && \\
@@ -475,6 +478,11 @@ RUN echo '#!/bin/bash' > /usr/local/bin/setup-bundle.sh && \\
     echo '    echo "# Agent Workspace" > README.md' >> /usr/local/bin/setup-bundle.sh && \\
     echo '    git add README.md' >> /usr/local/bin/setup-bundle.sh && \\
     echo '    git commit -m "Initial commit"' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "Setting up post-commit hook..."' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    mkdir -p .git/hooks' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "#!/bin/bash" > .git/hooks/post-commit' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "git bundle create /workspace-bundle/output.bundle HEAD" >> .git/hooks/post-commit' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    chmod +x .git/hooks/post-commit' >> /usr/local/bin/setup-bundle.sh && \\
     echo '    echo "Empty repository created"' >> /usr/local/bin/setup-bundle.sh && \\
     echo 'fi' >> /usr/local/bin/setup-bundle.sh && \\
     echo 'echo "Workspace setup complete"' >> /usr/local/bin/setup-bundle.sh
