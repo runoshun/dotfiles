@@ -335,6 +335,14 @@ ${Object.entries(MountUtils.getPresets())
 				fs.rmSync(bundleDir, { recursive: true, force: true });
 				console.log("Bundle directory cleaned up");
 			}
+
+			// Prune orphaned worktree entries
+			try {
+				execSync("git worktree prune", { stdio: "ignore" });
+				console.log("Worktree entries pruned");
+			} catch (pruneError) {
+				console.warn("Failed to prune worktree entries:", pruneError.message);
+			}
 		} catch (error) {
 			console.warn(`Failed to merge bundle: ${error.message}`);
 			console.log(`Output bundle preserved at: ${outputBundle}`);
@@ -607,6 +615,14 @@ CMD ["bash"]
 
 			// Cleanup temporary files
 			this.cleanupTempFiles();
+
+			// Prune orphaned worktree entries
+			try {
+				execSync("git worktree prune", { stdio: "ignore" });
+				console.log("Worktree entries pruned");
+			} catch (pruneError) {
+				console.warn("Failed to prune worktree entries:", pruneError.message);
+			}
 
 			// Ask user if they want to remove the branch
 			console.log(`\nBranch '${branchName}' still exists.`);
