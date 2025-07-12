@@ -315,6 +315,26 @@ ${Object.entries(MountUtils.getPresets())
 			// Clean up the output bundle
 			fs.unlinkSync(outputBundle);
 			console.log("Output bundle cleaned up");
+
+			// Remove worktree but keep branch
+			console.log("Removing worktree (branch will be preserved)...");
+			try {
+				execSync(`git worktree remove "${worktreePath}" --force`, {
+					stdio: "ignore",
+				});
+				console.log("Worktree removed successfully");
+			} catch (removeError) {
+				// If git worktree remove fails, manually remove directory
+				fs.rmSync(worktreePath, { recursive: true, force: true });
+				console.log("Worktree directory removed manually");
+			}
+
+			// Clean up bundle directory
+			const { bundleDir } = this.getBundlePaths(agentName);
+			if (fs.existsSync(bundleDir)) {
+				fs.rmSync(bundleDir, { recursive: true, force: true });
+				console.log("Bundle directory cleaned up");
+			}
 		} catch (error) {
 			console.warn(`Failed to merge bundle: ${error.message}`);
 			console.log(`Output bundle preserved at: ${outputBundle}`);
