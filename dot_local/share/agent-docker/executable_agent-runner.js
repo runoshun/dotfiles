@@ -217,6 +217,55 @@ class AgentRunner {
 		}
 	}
 
+	async checkAndCleanupCopies(agentName, copiesDir) {
+		try {
+			// Check if copies directory has any uncommitted changes
+			const hasUncommitted = execSync(`git -C "${copiesDir}" diff-index --quiet HEAD --; echo $?`, {
+				encoding: "utf8"
+			}).trim() !== "0";
+
+			if (hasUncommitted) {
+				console.log("📝 Copy repository has uncommitted changes, keeping for safety");
+				return;
+			}
+
+			// Check if copies directory has any untracked files
+			const untrackedFiles = execSync(`git -C "${copiesDir}" ls-files --others --exclude-standard`, {
+				encoding: "utf8"
+			}).trim();
+
+			if (untrackedFiles) {
+				console.log("📄 Copy repository has untracked files, keeping for safety");
+				return;
+			}
+
+			// Check if all commits have been merged (compare with original branch)
+			const branchName = `feature/agent-${agentName}`;
+			try {
+				const originalHead = execSync(`git rev-parse ${branchName}`, {
+					encoding: "utf8"
+				}).trim();
+				
+				const copiesHead = execSync(`git -C "${copiesDir}" rev-parse HEAD`, {
+					encoding: "utf8"
+				}).trim();
+
+				if (originalHead === copiesHead) {
+					console.log("🧹 All work merged successfully - copy repository can be safely removed");
+					console.log("   Run with --cleanup-copies flag to enable automatic cleanup");
+					console.log("   Or manually run: ./agent-runner.js clean-copies " + agentName);
+				} else {
+					console.log("📋 Copy repository state differs from branch, keeping for safety");
+				}
+			} catch (error) {
+				console.log("📋 Cannot verify merge status, keeping copy repository for safety");
+			}
+
+		} catch (error) {
+			console.log("📋 Could not analyze copy repository, keeping for safety");
+		}
+	}
+
 	// Generate Dockerfile content
 	generateDockerfileContent() {
 		return `FROM ubuntu:22.04
@@ -367,6 +416,11 @@ CMD ["bash"]
 		if (!fs.existsSync(copiesDir)) {
 			console.log("📦 Creating workspace...");
 			await this.createCopyRepository(originalDir, copiesDir, tempBundle);
+		} else {
+			// If worktree was removed but copy repo exists, we can still work
+			if (!fs.existsSync(originalDir)) {
+				console.log("📂 Resuming from copy repository (worktree was merged)");
+			}
 		}
 	}
 
@@ -415,6 +469,13 @@ CMD ["bash"]
 	async mergeCopyToWorktree(agentName) {
 		const { originalDir, copiesDir, outputBundle } = this.getAgentPaths(agentName);
 
+		// If worktree doesn't exist, recreate it for merging
+		if (!fs.existsSync(originalDir)) {
+			const branchName = `feature/agent-${agentName}`;
+			console.log("🔄 Recreating worktree for merge...");
+			await this.createWorktree(branchName, originalDir);
+		}
+
 		// Check if there are any commits to merge
 		try {
 			// Check for uncommitted changes
@@ -454,6 +515,13 @@ CMD ["bash"]
 
 			// Clean up the output bundle
 			fs.unlinkSync(outputBundle);
+
+			// Remove worktree after successful merge (branch is preserved)
+			await this.removeWorktree(originalDir);
+			console.log("🗑️ Worktree removed after merge (branch preserved)");
+
+			// Check if copies can be safely removed
+			await this.checkAndCleanupCopies(agentName, copiesDir);
 		} catch (error) {
 			console.warn(`マージに失敗しました: ${error.message}`);
 			if (fs.existsSync(outputBundle)) {
@@ -635,28 +703,33 @@ CMD ["bash"]
 				let status = "Unknown";
 				let lastCommit = "";
 				let uncommittedChanges = false;
+				let worktreeExists = fs.existsSync(originalDir);
 
-				try {
-					// Check if worktree is valid
-					execSync(`git -C "${originalDir}" status`, { stdio: "ignore" });
+				if (worktreeExists) {
+					try {
+						// Check if worktree is valid
+						execSync(`git -C "${originalDir}" status`, { stdio: "ignore" });
 
-					// Get last commit info
-					const commitInfo = execSync(
-						`git -C "${originalDir}" log -1 --format="%h - %s (%cr)"`,
-						{ encoding: "utf8" },
-					).trim();
-					lastCommit = commitInfo;
+						// Get last commit info
+						const commitInfo = execSync(
+							`git -C "${originalDir}" log -1 --format="%h - %s (%cr)"`,
+							{ encoding: "utf8" },
+						).trim();
+						lastCommit = commitInfo;
 
-					// Check for uncommitted changes
-					const statusOutput = execSync(
-						`git -C "${originalDir}" status --porcelain`,
-						{ encoding: "utf8" },
-					);
-					uncommittedChanges = statusOutput.trim().length > 0;
+						// Check for uncommitted changes
+						const statusOutput = execSync(
+							`git -C "${originalDir}" status --porcelain`,
+							{ encoding: "utf8" },
+						);
+						uncommittedChanges = statusOutput.trim().length > 0;
 
-					status = uncommittedChanges ? "Modified" : "Clean";
-				} catch (error) {
-					status = "Invalid";
+						status = uncommittedChanges ? "Modified" : "Clean";
+					} catch (error) {
+						status = "Invalid";
+					}
+				} else {
+					status = "Merged (worktree removed)";
 				}
 
 				// Check if branch exists
@@ -672,7 +745,7 @@ CMD ["bash"]
 				const hasCopyRepo = fs.existsSync(copiesDir);
 
 				console.log(`📁 ${agentName}`);
-				console.log(`   Worktree: ${originalDir}`);
+				console.log(`   Worktree: ${worktreeExists ? "✓" : "✗"} ${originalDir}`);
 				console.log(`   Copy repo: ${hasCopyRepo ? "✓" : "✗"}`);
 				console.log(`   Branch: ${branchName} ${branchExists ? "✓" : "✗"}`);
 				console.log(

@@ -68,7 +68,7 @@ const MOUNT_PRESETS = {
 
 	gemini: {
 		files: [
-			{ source: "~/.gemini", target: "/home/devuser/.gemini", readonly: true },
+			{ source: "~/.gemini", target: "/home/devuser/.gemini" },
 			{
 				source: "~/.config/gcloud",
 				target: "/home/devuser/.config/gcloud",
