@@ -452,14 +452,22 @@ RUN echo '#!/bin/bash' > /usr/local/bin/setup-bundle.sh && \\
     echo 'echo "Setting up workspace from bundle..."' >> /usr/local/bin/setup-bundle.sh && \\
     echo 'if [ -f "/workspace-bundle/input.bundle" ]; then' >> /usr/local/bin/setup-bundle.sh && \\
     echo '    echo "Found input bundle, creating repository from bundle..."' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    sudo mkdir -p /workspace' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    sudo chown -R devuser:devuser /workspace' >> /usr/local/bin/setup-bundle.sh && \\
     echo '    git init /workspace' >> /usr/local/bin/setup-bundle.sh && \\
     echo '    cd /workspace' >> /usr/local/bin/setup-bundle.sh && \\
     echo '    git config user.name "Agent User"' >> /usr/local/bin/setup-bundle.sh && \\
     echo '    git config user.email "agent@container.local"' >> /usr/local/bin/setup-bundle.sh && \\
-    echo '    git pull /workspace-bundle/input.bundle' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    git config --global --add safe.directory "*"' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    git config core.filemode false' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "Pulling from bundle..."' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    git pull /workspace-bundle/input.bundle || echo "Bundle pull failed, will try fetch"' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    sudo chown -R devuser:devuser /workspace' >> /usr/local/bin/setup-bundle.sh && \\
     echo '    echo "Repository restored from bundle"' >> /usr/local/bin/setup-bundle.sh && \\
     echo 'else' >> /usr/local/bin/setup-bundle.sh && \\
     echo '    echo "No input bundle found, creating empty repository..."' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    sudo mkdir -p /workspace' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    sudo chown -R devuser:devuser /workspace' >> /usr/local/bin/setup-bundle.sh && \\
     echo '    git init /workspace' >> /usr/local/bin/setup-bundle.sh && \\
     echo '    cd /workspace' >> /usr/local/bin/setup-bundle.sh && \\
     echo '    git config user.name "Agent User"' >> /usr/local/bin/setup-bundle.sh && \\
