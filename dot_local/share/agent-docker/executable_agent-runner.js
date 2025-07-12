@@ -17,6 +17,7 @@ class AgentRunner {
 			"agent-workspaces",
 			repoName,
 		);
+		this.bundleDir = path.join(this.workspaceDir, "bundles");
 		this.tempDockerfile = null;
 		this.mountPresets = [];
 		this.customMounts = [];
@@ -54,6 +55,15 @@ class AgentRunner {
 		}
 	}
 
+	getBundlePaths(agentName) {
+		const agentBundleDir = path.join(this.bundleDir, agentName);
+		return {
+			bundleDir: agentBundleDir,
+			inputBundle: path.join(agentBundleDir, "input.bundle"),
+			outputBundle: path.join(agentBundleDir, "output.bundle"),
+		};
+	}
+
 	async run() {
 		try {
 			const args = this.parseArgs();
@@ -68,7 +78,9 @@ class AgentRunner {
 				await this.listAgents();
 			} else {
 				await this.setupGitWorktree(agentName);
+				await this.createBundleFromWorktree(agentName);
 				await this.startContainer(agentName);
+				await this.mergeBundleToWorktree(agentName);
 			}
 		} catch (error) {
 			console.error("Error:", error.message);
@@ -252,8 +264,68 @@ ${Object.entries(MountUtils.getPresets())
 		console.log("Git worktree ready");
 	}
 
-	async startContainer(agentName) {
+	async createBundleFromWorktree(agentName) {
 		const worktreePath = path.join(this.workspaceDir, agentName);
+		const { bundleDir, inputBundle } = this.getBundlePaths(agentName);
+
+		console.log("Creating git bundle from worktree...");
+
+		// Ensure bundle directory exists
+		if (!fs.existsSync(bundleDir)) {
+			fs.mkdirSync(bundleDir, { recursive: true });
+		}
+
+		try {
+			// Create bundle from worktree
+			// Include all refs and the working tree state
+			execSync(`git -C "${worktreePath}" bundle create "${inputBundle}" HEAD`, {
+				stdio: "inherit",
+			});
+
+			console.log(`Bundle created: ${inputBundle}`);
+		} catch (error) {
+			throw new Error(`Failed to create bundle: ${error.message}`);
+		}
+	}
+
+	async mergeBundleToWorktree(agentName) {
+		const worktreePath = path.join(this.workspaceDir, agentName);
+		const { outputBundle } = this.getBundlePaths(agentName);
+
+		// Check if output bundle exists
+		if (!fs.existsSync(outputBundle)) {
+			console.log("No output bundle found, no changes to merge");
+			return;
+		}
+
+		console.log("Merging changes from container back to worktree...");
+
+		try {
+			// Verify the bundle is valid
+			execSync(`git -C "${worktreePath}" bundle verify "${outputBundle}"`, {
+				stdio: "ignore",
+			});
+
+			// Pull changes from bundle
+			execSync(`git -C "${worktreePath}" pull "${outputBundle}"`, {
+				stdio: "inherit",
+			});
+
+			console.log("Changes merged successfully");
+
+			// Clean up the output bundle
+			fs.unlinkSync(outputBundle);
+			console.log("Output bundle cleaned up");
+		} catch (error) {
+			console.warn(`Failed to merge bundle: ${error.message}`);
+			console.log(`Output bundle preserved at: ${outputBundle}`);
+			console.log("You can manually merge it with:");
+			console.log(`  git -C "${worktreePath}" pull "${outputBundle}"`);
+		}
+	}
+
+	async startContainer(agentName) {
+		const { bundleDir } = this.getBundlePaths(agentName);
 		const containerName = `agent-${agentName}`;
 
 		try {
@@ -288,7 +360,7 @@ ${Object.entries(MountUtils.getPresets())
 				? `/workspace/${this.relativeToGitRoot}`
 				: "/workspace";
 
-			// Run container with worktree mounted
+			// Run container with bundle directory mounted
 			const dockerArgs = [
 				"run",
 				"-it",
@@ -296,7 +368,7 @@ ${Object.entries(MountUtils.getPresets())
 				"--name",
 				containerName,
 				"-v",
-				`${worktreePath}:/workspace`,
+				`${bundleDir}:/workspace-bundle`,
 				"-v",
 				`${process.env.HOME}/.local/share/mise:/home/devuser/.local/share/mise`,
 				"-v",
@@ -307,16 +379,29 @@ ${Object.entries(MountUtils.getPresets())
 				"agent-dev",
 				"bash",
 				"-c",
-				'eval "$(mise activate bash)" && (mise install 2>/dev/null || echo "No mise config found, skipping tool installation") && mise trust && exec bash',
+				[
+					// Setup bundle and workspace
+					'setup-bundle.sh',
+					// Setup mise environment
+					'eval "$(mise activate bash)"',
+					'(mise install 2>/dev/null || echo "No mise config found, skipping tool installation")',
+					'mise trust',
+					// Setup exit trap to export bundle
+					'trap "export-bundle.sh" EXIT',
+					// Start interactive bash
+					'exec bash'
+				].join(' && '),
 			];
 
 			console.log("Container is starting...");
+			console.log("📦 Bundle-based git repository will be created");
 			if (this.relativeToGitRoot) {
 				console.log(
 					`📂 Working directory: /workspace/${this.relativeToGitRoot}`,
 				);
 			}
-			console.log('Run "exit" to stop the container and cleanup');
+			console.log('🔄 Changes will be automatically saved on exit');
+			console.log('Run "exit" to stop the container and save changes');
 
 			// Start container interactively
 			const containerProcess = spawn("docker", dockerArgs, {
@@ -326,11 +411,9 @@ ${Object.entries(MountUtils.getPresets())
 
 			containerProcess.on("close", (code) => {
 				console.log(`\nContainer exited with code ${code}`);
-				// Only cleanup temporary files, keep worktree for resuming work
+				// Only cleanup temporary files, bundle merge will happen in run()
 				this.cleanupTempFiles();
-				console.log(
-					'Work preserved. Use the same command to resume or "clean" to remove worktree.',
-				);
+				console.log("Bundle export completed");
 			});
 		} catch (error) {
 			this.cleanupTempFiles();
@@ -362,6 +445,74 @@ RUN apt-get update && apt-get install -y \\
 RUN useradd -m -s /bin/bash devuser && \\
     usermod -aG sudo devuser && \\
     echo 'devuser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+# Create bundle management scripts
+RUN cat > /usr/local/bin/setup-bundle.sh << 'EOF'
+#!/bin/bash
+set -e
+
+echo "Setting up workspace from bundle..."
+
+# Check if input bundle exists
+if [ -f "/workspace-bundle/input.bundle" ]; then
+    echo "Found input bundle, creating repository from bundle..."
+    
+    # Initialize empty repo
+    git init /workspace
+    cd /workspace
+    
+    # Configure git (basic config needed for operations)
+    git config user.name "Agent User"
+    git config user.email "agent@container.local"
+    
+    # Pull from bundle
+    git pull /workspace-bundle/input.bundle
+    
+    echo "Repository restored from bundle"
+else
+    echo "No input bundle found, creating empty repository..."
+    
+    # Initialize empty repo
+    git init /workspace
+    cd /workspace
+    
+    # Configure git
+    git config user.name "Agent User"
+    git config user.email "agent@container.local"
+    
+    # Create initial commit
+    echo "# Agent Workspace" > README.md
+    git add README.md
+    git commit -m "Initial commit"
+    
+    echo "Empty repository created"
+fi
+
+echo "Workspace setup complete"
+EOF
+
+RUN cat > /usr/local/bin/export-bundle.sh << 'EOF'
+#!/bin/bash
+set -e
+
+echo "Exporting workspace to bundle..."
+
+cd /workspace
+
+# Check if we have any commits
+if ! git rev-parse HEAD >/dev/null 2>&1; then
+    echo "No commits found, nothing to export"
+    exit 0
+fi
+
+# Create bundle with all commits from current branch
+git bundle create /workspace-bundle/output.bundle HEAD
+
+echo "Bundle exported to /workspace-bundle/output.bundle"
+EOF
+
+# Make scripts executable
+RUN chmod +x /usr/local/bin/setup-bundle.sh /usr/local/bin/export-bundle.sh
 
 # Switch to non-root user
 USER devuser
@@ -407,6 +558,7 @@ CMD ["bash"]
 
 	async cleanupAgent(agentName) {
 		const worktreePath = path.join(this.workspaceDir, agentName);
+		const { bundleDir } = this.getBundlePaths(agentName);
 		const branchName = `feature/agent-${agentName}`;
 
 		console.log(`Cleaning up agent '${agentName}'...`);
@@ -426,6 +578,14 @@ CMD ["bash"]
 				}
 			} else {
 				console.log("No worktree found to remove");
+			}
+
+			// Remove bundle directory
+			if (fs.existsSync(bundleDir)) {
+				fs.rmSync(bundleDir, { recursive: true, force: true });
+				console.log("Bundle directory removed");
+			} else {
+				console.log("No bundle directory found to remove");
 			}
 
 			// Cleanup temporary files
