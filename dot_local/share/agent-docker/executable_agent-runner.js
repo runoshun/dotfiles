@@ -80,7 +80,6 @@ class AgentRunner {
 				await this.setupGitWorktree(agentName);
 				await this.createBundleFromWorktree(agentName);
 				await this.startContainer(agentName);
-				await this.mergeBundleToWorktree(agentName);
 			}
 		} catch (error) {
 			console.error("Error:", error.message);
@@ -407,9 +406,20 @@ ${Object.entries(MountUtils.getPresets())
 				detached: false,
 			});
 
-			containerProcess.on("close", (code) => {
+			containerProcess.on("close", async (code) => {
 				console.log(`\nContainer exited with code ${code}`);
-				// Only cleanup temporary files, bundle merge will happen in run()
+				
+				// Wait a moment for any final operations to complete
+				await new Promise(resolve => setTimeout(resolve, 1000));
+				
+				// Try to merge bundle after container exit
+				try {
+					await this.mergeBundleToWorktree(agentName);
+				} catch (error) {
+					console.warn("Failed to merge bundle after container exit:", error.message);
+				}
+				
+				// Only cleanup temporary files
 				this.cleanupTempFiles();
 				console.log("Bundle export completed");
 			});
