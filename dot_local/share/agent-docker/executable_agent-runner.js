@@ -447,69 +447,40 @@ RUN useradd -m -s /bin/bash devuser && \\
     echo 'devuser ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 # Create bundle management scripts
-RUN cat > /usr/local/bin/setup-bundle.sh << 'EOF'
-#!/bin/bash
-set -e
+RUN echo '#!/bin/bash' > /usr/local/bin/setup-bundle.sh && \\
+    echo 'set -e' >> /usr/local/bin/setup-bundle.sh && \\
+    echo 'echo "Setting up workspace from bundle..."' >> /usr/local/bin/setup-bundle.sh && \\
+    echo 'if [ -f "/workspace-bundle/input.bundle" ]; then' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "Found input bundle, creating repository from bundle..."' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    git init /workspace' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    cd /workspace' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    git config user.name "Agent User"' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    git config user.email "agent@container.local"' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    git pull /workspace-bundle/input.bundle' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "Repository restored from bundle"' >> /usr/local/bin/setup-bundle.sh && \\
+    echo 'else' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "No input bundle found, creating empty repository..."' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    git init /workspace' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    cd /workspace' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    git config user.name "Agent User"' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    git config user.email "agent@container.local"' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "# Agent Workspace" > README.md' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    git add README.md' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    git commit -m "Initial commit"' >> /usr/local/bin/setup-bundle.sh && \\
+    echo '    echo "Empty repository created"' >> /usr/local/bin/setup-bundle.sh && \\
+    echo 'fi' >> /usr/local/bin/setup-bundle.sh && \\
+    echo 'echo "Workspace setup complete"' >> /usr/local/bin/setup-bundle.sh
 
-echo "Setting up workspace from bundle..."
-
-# Check if input bundle exists
-if [ -f "/workspace-bundle/input.bundle" ]; then
-    echo "Found input bundle, creating repository from bundle..."
-    
-    # Initialize empty repo
-    git init /workspace
-    cd /workspace
-    
-    # Configure git (basic config needed for operations)
-    git config user.name "Agent User"
-    git config user.email "agent@container.local"
-    
-    # Pull from bundle
-    git pull /workspace-bundle/input.bundle
-    
-    echo "Repository restored from bundle"
-else
-    echo "No input bundle found, creating empty repository..."
-    
-    # Initialize empty repo
-    git init /workspace
-    cd /workspace
-    
-    # Configure git
-    git config user.name "Agent User"
-    git config user.email "agent@container.local"
-    
-    # Create initial commit
-    echo "# Agent Workspace" > README.md
-    git add README.md
-    git commit -m "Initial commit"
-    
-    echo "Empty repository created"
-fi
-
-echo "Workspace setup complete"
-EOF
-
-RUN cat > /usr/local/bin/export-bundle.sh << 'EOF'
-#!/bin/bash
-set -e
-
-echo "Exporting workspace to bundle..."
-
-cd /workspace
-
-# Check if we have any commits
-if ! git rev-parse HEAD >/dev/null 2>&1; then
-    echo "No commits found, nothing to export"
-    exit 0
-fi
-
-# Create bundle with all commits from current branch
-git bundle create /workspace-bundle/output.bundle HEAD
-
-echo "Bundle exported to /workspace-bundle/output.bundle"
-EOF
+RUN echo '#!/bin/bash' > /usr/local/bin/export-bundle.sh && \\
+    echo 'set -e' >> /usr/local/bin/export-bundle.sh && \\
+    echo 'echo "Exporting workspace to bundle..."' >> /usr/local/bin/export-bundle.sh && \\
+    echo 'cd /workspace' >> /usr/local/bin/export-bundle.sh && \\
+    echo 'if ! git rev-parse HEAD >/dev/null 2>&1; then' >> /usr/local/bin/export-bundle.sh && \\
+    echo '    echo "No commits found, nothing to export"' >> /usr/local/bin/export-bundle.sh && \\
+    echo '    exit 0' >> /usr/local/bin/export-bundle.sh && \\
+    echo 'fi' >> /usr/local/bin/export-bundle.sh && \\
+    echo 'git bundle create /workspace-bundle/output.bundle HEAD' >> /usr/local/bin/export-bundle.sh && \\
+    echo 'echo "Bundle exported to /workspace-bundle/output.bundle"' >> /usr/local/bin/export-bundle.sh
 
 # Make scripts executable
 RUN chmod +x /usr/local/bin/setup-bundle.sh /usr/local/bin/export-bundle.sh
